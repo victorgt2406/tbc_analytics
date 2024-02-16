@@ -6,3 +6,5 @@ elasticsearch
 msal
 fastapi
 uvicorn[standard]
+python-dotenv
+aiohttp
