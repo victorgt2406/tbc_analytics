@@ -1,3 +1,4 @@
+from importlib import import_module
 import os
 import importlib.util
 from fastapi import FastAPI
@@ -7,29 +8,22 @@ from elk import ELK
 app = FastAPI()
 
 
-# def load_routers(app, path='routes/', root='app'):
-#     for root, dirs, files in os.walk(path):
-#         for file in files:
-#             if file.endswith('.py') and not file.startswith('__'):
-#                 # Generate the module name by the file path
-#                 module_name = os.path.join(root, file).replace(
-#                     '/', '.').replace('\\', '.')
-#                 module_name = module_name.replace('.py', '')
+def load_routes():
+    versions = ["beta", "v1_0"]
+    for version in versions:
+        path = f"./routes/{version}"
+        print(path)
+        files:list[str] = list(map(lambda x: path+str(f"/{x}"),os.listdir(path)))
+        files = list(filter(lambda x: x.endswith(".py"), files))
+        print(files)
+        for file in files:
+            route_name = file.split("/")[-1][:-3]
+            print(route_name)
+            module_path = file[2:-3].replace("/", ".")
+            print(module_path)
+            module = import_module(module_path)
+            app.include_router(module.router, prefix=f"/api/{version}/{route_name}")
 
-#                 # Load the module
-#                 spec = importlib.util.spec_from_file_location(
-#                     module_name, os.path.join(root, file))
-#                 module = importlib.util.module_from_spec(spec)
-#                 spec.loader.exec_module(module)
-
-#                 # Register the router
-#                 if hasattr(module, 'router'):
-#                     app.include_router(module.router, prefix='/'+module_name[len(
-#                         root)+1:].replace('.', '/').replace('/'+file[:-3], ''))
-
-
-# Assuming your project structure starts in the 'app/api' directory
-# load_routers(app)
+load_routes()
 
 elk = ELK()
-asyncio.run(elk.update_ms_graph())

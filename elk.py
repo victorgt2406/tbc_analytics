@@ -1,5 +1,6 @@
 """ELK abstraction"""
 
+import asyncio
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -51,7 +52,7 @@ class ELK:
         self.es.bulk(operations=docs_es)
 
     async def update_ms_graph(self):
-        await self.ms_graph.async_init()
-        self.bulk_docs(self.ms_graph.users, "users")
-        self.bulk_docs(self.ms_graph.mobile_apps, "mobile_apps")
-        self.bulk_docs(self.ms_graph.devices, "devices")
+        """updates the basic values of ms_graph"""
+        self.bulk_docs(await self.ms_graph.get_users(), "users")
+        self.bulk_docs(await self.ms_graph.get_mobile_apps(), "mobile_apps")
+        self.bulk_docs(await self.ms_graph.get_devices(), "devices")

@@ -5,4 +5,4 @@ router = APIRouter()
 
 @router.get("/")
 async def read_users():
-    return {"message": "Lista de usuarios para versión específica en beta"}
+    return {"message": "Lista de usuarios para versión específica en v1_0"}
