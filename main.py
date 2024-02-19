@@ -1,8 +1,6 @@
 from importlib import import_module
 import os
-import importlib.util
 from fastapi import FastAPI
-import asyncio
 from elk import ELK
 
 app = FastAPI()

@@ -57,6 +57,23 @@ class Msgraph:
         return list(res["value"])
 
     async def get_devices(self) -> List[dict]:
-        """Connects to msgraph API to update the `devices` info"""
+        """Connects to msgraph API and returns the `devices` info"""
         res = await self.query("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices")
         return list(res["value"])
+
+    async def get_audit_logs(self) -> List[dict]:
+        """Connects to msgraph API and returns the `audit_logs` info"""
+        res = await self.query("https://graph.microsoft.com/v1.0/auditLogs/signIns")
+        print(res)
+        return list(res["value"])
+    
+if __name__ == "__main__":
+    import asyncio
+    import json
+    async def main():
+        res = await Msgraph().get_audit_logs()
+        print(json.dumps(res))
+        # Crear y escribir en un archivo JSON
+        with open('./archived/logs.json', 'w') as json_file:
+            json.dump(res,json_file, indent=4)
+    asyncio.run(main())
