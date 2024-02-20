@@ -24,4 +24,9 @@ def load_routes():
 
 load_routes()
 
-elk = ELK()
+
+
+if __name__ == "__main__":
+    import asyncio
+    elk = ELK()
+    asyncio.run(elk.update_ms_graph())

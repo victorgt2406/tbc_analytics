@@ -64,7 +64,6 @@ class Msgraph:
     async def get_audit_logs(self) -> List[dict]:
         """Connects to msgraph API and returns the `audit_logs` info"""
         res = await self.query("https://graph.microsoft.com/v1.0/auditLogs/signIns")
-        print(res)
         return list(res["value"])
     
 if __name__ == "__main__":
