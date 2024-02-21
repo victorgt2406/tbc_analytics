@@ -1,5 +1,6 @@
 """ELK abstraction"""
 
+import asyncio
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -21,6 +22,7 @@ class ELK:
     def __init__(self) -> None:
         self.setup_connections()
         self.ms_graph = Msgraph()
+        self.update = False
 
     def setup_connections(self):
         """
@@ -31,6 +33,7 @@ class ELK:
         api_key = os.getenv("ES_API_KEY")
 
         self.es = Elasticsearch(cloud, api_key=api_key)
+        print("Elasticsearch: Connection sucessful")
 
     def to_esdocs(self, docs:List[dict], index, id_key="id") -> List[dict]:
         """
@@ -61,11 +64,20 @@ class ELK:
         - `id_key="id"`: The key in each document dictionary that contains the document's ID. The default key is `"id"`.
         """
         docs_es = self.to_esdocs(docs, index, id_key)
+        print(f"Elasticsearch: {len(docs)} docs where transformed to be indexed")
         self.es.bulk(operations=docs_es)
+        print(f"Elasticsearch: {len(docs)} docs where index at {index}")
 
     async def update_ms_graph(self):
         """updates the basic values of ms_graph"""
         self.bulk_docs(await self.ms_graph.get_users(), "users")
         self.bulk_docs(await self.ms_graph.get_mobile_apps(), "mobile_apps")
         self.bulk_docs(await self.ms_graph.get_devices(), "devices")
-        self.bulk_docs(await self.ms_graph.get_audit_logs(), "audit_logs")
+        self.bulk_docs(await self.ms_graph.get_auditlogs(), "audit_logs")
+
+    async def auto_update_ms_graph(self):
+        """Auto update ms graph data to elasticsearch"""
+        print("Elasticsearch: Auto update ms_graph started")
+        while True:
+            await self.update_ms_graph()
+            await asyncio.sleep(2*60)

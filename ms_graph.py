@@ -1,10 +1,10 @@
 """MsGraph abstraction"""
-
 import os
 from typing import List
 import aiohttp
 from dotenv import load_dotenv
 from msal import ConfidentialClientApplication
+from datetime import datetime, timezone
 
 
 class Msgraph:
@@ -20,6 +20,7 @@ class Msgraph:
     def __init__(self) -> None:
         """All the MsGraph opetations"""
         self.headers = self._get_headers()
+        self.last_auditlogs_update: datetime | None = None
 
     def _get_headers(self) -> dict[str,str]:
         """Returns the headers required to connect to MsGraph"""
@@ -40,39 +41,57 @@ class Msgraph:
 
     async def query(self, graph_url: str):
         """Connects to msgraph API to return all the data request it"""
+        all_data = []
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(graph_url, headers=self.headers) as response:
-                res_json = await response.json()
-                return res_json
+            while graph_url:
+                async with session.get(graph_url, headers=self.headers) as response:
+                    res_json = await response.json()
+                    if("error" in res_json):
+                        print(f"MsGraph: ERROR {graph_url} failed")
+                    else:
+                        print(f"MsGraph: {graph_url} runned sucesfully")
+                    all_data.extend(res_json.get('value', []))
+                    graph_url = res_json.get('@odata.nextLink', None)
+        return all_data       
 
     async def get_users(self) -> List[dict]:
         """Connects to msgraph API to update the `users` info"""
-        res = await self.query("https://graph.microsoft.com/v1.0/users")
-        return list(res["value"])
+        return await self.query("https://graph.microsoft.com/v1.0/users")
 
     async def get_mobile_apps(self) -> List[dict]:
         """Connects to msgraph API to update the `mobile apps` info"""
-        res = await self.query("https://graph.microsoft.com/v1.0/deviceAppManagement/mobileApps")
-        return list(res["value"])
+        return await self.query("https://graph.microsoft.com/v1.0/deviceAppManagement/mobileApps")
 
     async def get_devices(self) -> List[dict]:
         """Connects to msgraph API and returns the `devices` info"""
-        res = await self.query("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices")
-        return list(res["value"])
+        return await self.query("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices")
 
-    async def get_audit_logs(self) -> List[dict]:
+    async def get_auditlogs(self) -> List[dict]:
         """Connects to msgraph API and returns the `audit_logs` info"""
-        res = await self.query("https://graph.microsoft.com/v1.0/auditLogs/signIns")
-        return list(res["value"])
+        now = datetime.now()
+        if self.last_auditlogs_update is None:
+            self.last_auditlogs_update = datetime(2024,1,1)
+
+        url = "https://graph.microsoft.com/v1.0/auditLogs/signIns"
+        url_filter = f"$filter=createdDateTime ge {self.last_auditlogs_update.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {now.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%sZ")}"
+        self.last_auditlogs_update = now
+
+        return await self.query(f"{url}?{url_filter}")
     
 if __name__ == "__main__":
     import asyncio
     import json
     async def main():
-        res = await Msgraph().get_audit_logs()
-        print(json.dumps(res))
+        res = await Msgraph().get_auditlogs()
+        # print(json.dumps(res))
         # Crear y escribir en un archivo JSON
         with open('./archived/logs.json', 'w') as json_file:
+            json.dump(res,json_file, indent=4)
+
+        res = await Msgraph().get_devices()
+        # print(json.dumps(res))
+        # Crear y escribir en un archivo JSON
+        with open('./archived/devices.json', 'w') as json_file:
             json.dump(res,json_file, indent=4)
     asyncio.run(main())
