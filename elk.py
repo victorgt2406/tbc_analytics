@@ -52,7 +52,7 @@ class ELK:
             docs_es.append(doc)
         return docs_es
 
-    def bulk_docs(self, docs:List[dict], index, id_key="id"):
+    async def bulk_docs(self, docs:List[dict], index, id_key="id"):
         """
         This function takes a list of documents and performs a bulk operation to insert them into an Elasticsearch index.
 
@@ -65,15 +65,27 @@ class ELK:
         """
         docs_es = self.to_esdocs(docs, index, id_key)
         print(f"Elasticsearch: {len(docs)} docs where transformed to be indexed")
-        self.es.bulk(operations=docs_es)
-        print(f"Elasticsearch: {len(docs)} docs where index at {index}")
+        if len(docs) > 1000:
+            def divide_list(arr:list, n:int):
+                # Usar una comprensión de lista para generar los sub-arrays
+                return [arr[i:i + n] for i in range(0, len(arr), n)]
+            lists_docs_es = divide_list(docs_es, 500)
+            len_lists = len(lists_docs_es)
+            for i, list_docs_es in enumerate(lists_docs_es):
+                res = self.es.bulk(operations=list_docs_es)
+                print(res)
+                await asyncio.sleep(0.5)
+                print(f"Elasticsearch: {len(list_docs_es)} docs where index at {index} {i+1}/{len_lists}")
+        else:
+            res = self.es.bulk(operations=docs_es)
+            print(f"Elasticsearch: {len(docs)} docs where index at {index} 1/1")
 
     async def update_ms_graph(self):
         """updates the basic values of ms_graph"""
-        self.bulk_docs(await self.ms_graph.get_users(), "users")
-        self.bulk_docs(await self.ms_graph.get_mobile_apps(), "mobile_apps")
-        self.bulk_docs(await self.ms_graph.get_devices(), "devices")
-        self.bulk_docs(await self.ms_graph.get_auditlogs(), "audit_logs")
+        # await self.bulk_docs(await self.ms_graph.get_users(), "users")
+        # await self.bulk_docs(await self.ms_graph.get_mobile_apps(), "mobile_apps")
+        # await self.bulk_docs(await self.ms_graph.get_devices(), "devices")
+        await self.bulk_docs(await self.ms_graph.get_auditlogs(), "logs-ms_auditlogs")
 
     async def auto_update_ms_graph(self):
         """Auto update ms graph data to elasticsearch"""
