@@ -84,7 +84,10 @@ class Elk:
             for i, list_docs_es in enumerate(lists_docs_es):
                 res = self.es.bulk(operations=list_docs_es)
                 await asyncio.sleep(0.5)
-                print(f"Elasticsearch: ({i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
+                if "errors" in res and res["errors"]:
+                    break
+                else:
+                    print(f"Elasticsearch: ({i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
         else:
             res = self.es.bulk(operations=docs_es)
             print(f"Elasticsearch: (1/1) {len(docs)} docs where index at {index} ")
