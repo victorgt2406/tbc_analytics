@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from utils.config import load_config
 from utils.elk import Elk
 from utils.msgraph import Msgraph
-from utils.queries.last_login_date import last_login_date
+from queries.last_login_date import last_login_date
 
 BASIC_DATA = [
     {
