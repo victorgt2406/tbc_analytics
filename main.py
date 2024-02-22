@@ -7,7 +7,7 @@ from importlib import import_module
 import asyncio
 import os
 from fastapi import FastAPI
-from elk import ELK
+from utils.elk_msgraph import ElkMsgraph
 
 app = FastAPI()
 
@@ -36,15 +36,17 @@ load_routes()
 @app.on_event("startup")
 async def startup_event():
     """Función para ejecutar al iniciar la aplicación."""
-    app.state.elk = ELK()
+    app.state.em = ElkMsgraph()
     # Asigna la tarea a un atributo del estado de la app si necesitas cancelarla luego.
-    app.state.update_task = asyncio.create_task(app.state.elk.auto_update_ms_graph())
+    app.state.task_basicdata = asyncio.create_task(app.state.em.auto_update_basicdata())
+    app.state.task_logins = asyncio.create_task(app.state.em.auto_update_logins())
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Función para ejecutar al cerrar la aplicación."""
     print("Elasticsearch: Auto update ms_graph ended")
-    app.state.update_task.cancel()
+    app.state.task_basicdata.cancel()
+    app.state.task_logins.cancel()
     try:
         await app.state.update_task
     except asyncio.CancelledError:

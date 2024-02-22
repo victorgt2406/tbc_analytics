@@ -1,0 +1,17 @@
+{
+    "elk": {
+        "threshold": 500
+    },
+    "sleep": {
+        "loadMsGraph": 1,
+        "uploadElk": 1,
+        "basicData": 30,
+        "logins": 2
+    },
+    "indexes": {
+        "users": "ms-users",
+        "deviceAppManagement/mobileApps": "ms-apps",
+        "deviceManagement/managedDevices": "ms-devices",
+        "auditLogs/signIns": "logs-ms-singins"
+    }
+}

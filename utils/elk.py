@@ -5,12 +5,12 @@ import os
 from typing import List
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
+from utils.config import load_config
 
-from ms_graph import Msgraph
 
-class ELK:
+class Elk:
     """
-    A class that abstract Elasticsearch to be used with msgraph easierly
+    A class that abstract Elasticsearch
 
     Attributes:
         `es`: Client of Elasticsearch.
@@ -19,10 +19,14 @@ class ELK:
         `bulk_docs`
 
     """
+
     def __init__(self) -> None:
+        # default values
+        self.threshold = 1000
+
+        # set up
         self.setup_connections()
-        self.ms_graph = Msgraph()
-        self.update = False
+        self.setup_config()
 
     def setup_connections(self):
         """
@@ -35,7 +39,13 @@ class ELK:
         self.es = Elasticsearch(cloud, api_key=api_key)
         print("Elasticsearch: Connection sucessful")
 
-    def to_esdocs(self, docs:List[dict], index, id_key="id") -> List[dict]:
+    def setup_config(self):
+        "Load the actual configuration"
+        config = load_config()["elk"]
+        if "threshold" in config:
+            self.threshold = config["threshold"]
+
+    def to_esdocs(self, docs: List[dict], index, id_key="id") -> List[dict]:
         """
         This function transforms a list of documents, where each document is represented as a Python dictionary, into a format suitable for bulk operations in Elasticsearch.
 
@@ -47,12 +57,12 @@ class ELK:
         """
         docs_es = []
         for doc in docs:
-            docs_es.append({"index": { "_index": index, "_id": doc[id_key]}})
+            docs_es.append({"index": {"_index": index, "_id": doc[id_key]}})
             del doc["id"]
             docs_es.append(doc)
         return docs_es
 
-    async def bulk_docs(self, docs:List[dict], index, id_key="id"):
+    async def bulk_docs(self, docs: List[dict], index, id_key="id"):
         """
         This function takes a list of documents and performs a bulk operation to insert them into an Elasticsearch index.
 
@@ -65,31 +75,17 @@ class ELK:
         """
         docs_es = self.to_esdocs(docs, index, id_key)
         print(f"Elasticsearch: {len(docs)} docs where transformed to be indexed")
-        if len(docs) > 1000:
-            def divide_list(arr:list, n:int):
-                # Usar una comprensión de lista para generar los sub-arrays
+        if len(docs) > self.threshold:
+            def divide_list(arr: list, n: int):
                 return [arr[i:i + n] for i in range(0, len(arr), n)]
-            lists_docs_es = divide_list(docs_es, 500)
+            
+            lists_docs_es = divide_list(docs_es, self.threshold)
             len_lists = len(lists_docs_es)
             for i, list_docs_es in enumerate(lists_docs_es):
                 res = self.es.bulk(operations=list_docs_es)
-                print(res)
                 await asyncio.sleep(0.5)
-                print(f"Elasticsearch: {len(list_docs_es)} docs where index at {index} {i+1}/{len_lists}")
+                print(f"Elasticsearch: ({i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
         else:
             res = self.es.bulk(operations=docs_es)
-            print(f"Elasticsearch: {len(docs)} docs where index at {index} 1/1")
-
-    async def update_ms_graph(self):
-        """updates the basic values of ms_graph"""
-        # await self.bulk_docs(await self.ms_graph.get_users(), "users")
-        # await self.bulk_docs(await self.ms_graph.get_mobile_apps(), "mobile_apps")
-        # await self.bulk_docs(await self.ms_graph.get_devices(), "devices")
-        await self.bulk_docs(await self.ms_graph.get_auditlogs(), "logs-ms_auditlogs")
-
-    async def auto_update_ms_graph(self):
-        """Auto update ms graph data to elasticsearch"""
-        print("Elasticsearch: Auto update ms_graph started")
-        while True:
-            await self.update_ms_graph()
-            await asyncio.sleep(2*60)
+            print(f"Elasticsearch: (1/1) {len(docs)} docs where index at {index} ")
+        print(f"Elasticsearch: {len(docs)} where succesfully indexed at {index}")
