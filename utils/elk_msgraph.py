@@ -57,7 +57,7 @@ class ElkMsgraph:
         if(end_date is None):
             end_date = last_login_date(self.elk.es)
 
-        print(f"Last update date {end_date}")
+        print(f"Logins: Last update date {end_date}")
         url = "https://graph.microsoft.com/v1.0/auditLogs/signIns"
         url_filter = f"$filter=createdDateTime ge {end_date.strftime(
             "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {start_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
