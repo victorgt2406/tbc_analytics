@@ -17,6 +17,10 @@ BASIC_DATA = [
         "index": "ms_users"
     },
     {
+        "url": "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses",
+        "index": "ms_users"
+    },
+    {
         "url": "https://graph.microsoft.com/v1.0/deviceAppManagement/mobileApps",
         "index": "ms_apps"
     },

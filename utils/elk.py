@@ -57,9 +57,25 @@ class Elk:
         """
         docs_es = []
         for doc in docs:
-            docs_es.append({"index": {"_index": index, "_id": doc[id_key]}})
-            del doc["id"]
-            docs_es.append(doc)
+            # docs_es.append({
+            #     "index": {
+            #         "_index": index,
+            #         "_id": doc[id_key]
+            #     }
+            # })
+            # del doc[id_key]
+            # docs_es.append(doc)
+            docs_es.append({
+                "update": {
+                    "_index": index,
+                    "_id": doc[id_key]
+                }
+            })
+            del doc[id_key]
+            docs_es.append({
+                "doc": doc,
+                "doc_as_upsert": True
+            })
         return docs_es
 
     async def bulk_docs(self, docs: List[dict], index, id_key="id"):
@@ -74,11 +90,12 @@ class Elk:
         - `id_key="id"`: The key in each document dictionary that contains the document's ID. The default key is `"id"`.
         """
         docs_es = self.to_esdocs(docs, index, id_key)
-        print(f"Elasticsearch: {len(docs)} docs where transformed to be indexed")
+        print(f"Elasticsearch: {
+              len(docs)} docs where transformed to be indexed")
         if len(docs) > self.threshold:
             def divide_list(arr: list, n: int):
                 return [arr[i:i + n] for i in range(0, len(arr), n)]
-            
+
             lists_docs_es = divide_list(docs_es, self.threshold)
             len_lists = len(lists_docs_es)
             for i, list_docs_es in enumerate(lists_docs_es):
@@ -87,8 +104,11 @@ class Elk:
                 if "errors" in res and res["errors"]:
                     break
                 else:
-                    print(f"Elasticsearch: ({i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
+                    print(f"Elasticsearch: ({
+                          i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
         else:
             res = self.es.bulk(operations=docs_es)
-            print(f"Elasticsearch: (1/1) {len(docs)} docs where index at {index} ")
-        print(f"Elasticsearch: {len(docs)} where succesfully indexed at {index}")
+            print(f"Elasticsearch: (1/1) {len(docs)
+                                          } docs where index at {index} ")
+        print(f"Elasticsearch: {
+              len(docs)} where succesfully indexed at {index}")
