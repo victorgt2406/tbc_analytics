@@ -106,9 +106,9 @@ class Elk:
                 else:
                     print(f"Elasticsearch: ({
                           i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
-        else:
+        elif len(docs) > 0:
             res = self.es.bulk(operations=docs_es)
             print(f"Elasticsearch: (1/1) {len(docs)
                                           } docs where index at {index} ")
         print(f"Elasticsearch: {
-              len(docs)} where succesfully indexed at {index}")
+                len(docs)} docs where succesfully indexed at {index}")
