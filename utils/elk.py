@@ -21,12 +21,7 @@ class Elk:
     """
 
     def __init__(self) -> None:
-        # default values
-        self.threshold = 1000
-
-        # set up
         self.setup_connections()
-        self.setup_config()
 
     def setup_connections(self):
         """
@@ -38,12 +33,6 @@ class Elk:
 
         self.es = Elasticsearch(cloud, api_key=api_key)
         print("Elasticsearch: Connection sucessful")
-
-    def setup_config(self):
-        "Load the actual configuration"
-        config = load_config()["elk"]
-        if "threshold" in config:
-            self.threshold = config["threshold"]
 
     def to_esdocs(self, docs: List[dict], index, id_key="id") -> List[dict]:
         """
@@ -57,14 +46,6 @@ class Elk:
         """
         docs_es = []
         for doc in docs:
-            # docs_es.append({
-            #     "index": {
-            #         "_index": index,
-            #         "_id": doc[id_key]
-            #     }
-            # })
-            # del doc[id_key]
-            # docs_es.append(doc)
             docs_es.append({
                 "update": {
                     "_index": index,
@@ -92,11 +73,12 @@ class Elk:
         docs_es = self.to_esdocs(docs, index, id_key)
         print(f"Elasticsearch: {
               len(docs)} docs where transformed to be indexed")
-        if len(docs) > self.threshold:
+        threshold = load_config().get("elk", {}).get("threshold", 500)
+        if len(docs) > threshold:
             def divide_list(arr: list, n: int):
                 return [arr[i:i + n] for i in range(0, len(arr), n)]
 
-            lists_docs_es = divide_list(docs_es, self.threshold)
+            lists_docs_es = divide_list(docs_es, threshold)
             len_lists = len(lists_docs_es)
             for i, list_docs_es in enumerate(lists_docs_es):
                 res = self.es.bulk(operations=list_docs_es)

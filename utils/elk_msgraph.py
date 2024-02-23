@@ -46,7 +46,6 @@ class ElkMsgraph:
     def __init__(self) -> None:
         self.elk = Elk()
         self.ms_graph = Msgraph()
-        self.config = load_config()
 
     async def update_basicdata(self):
         """updates the basic values of ms_graph"""
@@ -74,7 +73,7 @@ class ElkMsgraph:
         print("Auto-update: basicdata started")
         while True:
             await self.update_basicdata()
-            await asyncio.sleep(sleep_time*60)
+            await asyncio.sleep(sleep_time)
 
     async def auto_update_logins(self):
         """Auto update ms graph logins to elasticsearch"""
@@ -82,4 +81,4 @@ class ElkMsgraph:
         print("Auto-update: logins started")
         while True:
             await self.update_logins()
-            await asyncio.sleep(sleep_time*60)
+            await asyncio.sleep(sleep_time)

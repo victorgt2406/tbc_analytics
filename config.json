@@ -5,8 +5,8 @@
     "sleep": {
         "loadMsGraph": 1,
         "uploadElk": 1,
-        "basicData": 30,
-        "logins": 2
+        "basicData": 1800,
+        "logins": 120
     },
     "indexes": {
         "users": "ms-users",
