@@ -46,7 +46,7 @@ class Msgraph:
                 async with session.get(graph_url, headers=self.headers) as response:
                     res_json = await response.json()
                     if("error" in res_json):
-                        print(f"MsGraph: ERROR {graph_url} failed")
+                        print(f"MsGraph: ERROR {graph_url} failed\n\t{res_json["error"]["code"]} -- {res_json["error"]["message"]}")
                     else:
                         print(f"MsGraph: {graph_url} runned sucesfully")
                     all_data.extend(res_json.get('value', []))
