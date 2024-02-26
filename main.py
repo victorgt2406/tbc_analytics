@@ -7,7 +7,7 @@ from importlib import import_module
 import asyncio
 import os
 from fastapi import FastAPI
-from utils.elk_msgraph import ElkMsgraph
+from connectors.elk_msgraph import ElkMsgraph
 
 app = FastAPI()
 

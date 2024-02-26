@@ -8,8 +8,8 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Any
 from utils.config import load_config
-from utils.elk import Elk
-from utils.msgraph import Msgraph
+from connectors.elk import Elk
+from connectors.msgraph import Msgraph
 from queries.last_login_date import last_login_date
 
 BASIC_DATA = [
@@ -103,8 +103,8 @@ class ElkMsgraph:
         sleep_time: int = load_config().get("sleep", {}).get("basicData", 30)
         print("Auto-update: basicdata started")
         while True:
-            # await self.update_basicdata()
-            await self.update_deviceapps()
+            await self.update_basicdata()
+            # await self.update_deviceapps()
             await asyncio.sleep(sleep_time)
 
     async def auto_update_logins(self):
