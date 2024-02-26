@@ -37,19 +37,20 @@ class Msgraph:
         token: str = token_res.get("access_token")  # type: ignore
         return {'Authorization': f'Bearer {token}'}  # token microsoft
 
-    async def query(self, graph_url: str) -> list[dict[str,Any]]:
+    async def query(self, graph_url: str) -> tuple[list[dict[str,Any]], bool]:
         """Connects to msgraph API to return all the data request it"""
         all_data = []
-
+        success = True
         async with aiohttp.ClientSession() as session:
             while graph_url:
                 async with session.get(graph_url, headers=self.headers) as response:
                     res_json = await response.json()
                     if("error" in res_json):
                         print(f"MsGraph: ERROR {graph_url} failed\n\t{res_json["error"]["code"]} -- {res_json["error"]["message"]}")
+                        success = False
                     else:
                         print(f"MsGraph: {graph_url} runned sucesfully")
                     all_data.extend(res_json.get('value', []))
                     graph_url = res_json.get('@odata.nextLink', None)
                     await asyncio.sleep(0.2)
-        return all_data
+        return all_data, success
