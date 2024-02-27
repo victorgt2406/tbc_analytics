@@ -6,15 +6,21 @@ from connectors.elk_msgraph import ElkMsgraph
 
 em = ElkMsgraph()
 
+bridges_exception = ["device_apps_bridge"]
+
+
 def load_bridges() -> list[Bridge]:
     """
     Loads all the bridges
     """
 
-    bridges:list[Bridge] = []
+    bridges: list[Bridge] = []
     path = "./bridges"
-    files:list[str] = list(map(lambda x: f"{path}/{x}", os.listdir(path)))
-    files = list(filter(lambda file: file.endswith(".py") and not file.endswith("__init__.py"), files))
+    files: list[str] = list(map(lambda x: f"{path}/{x}", os.listdir(path)))
+    bridges_exception_path = list(
+        map(lambda x: f"{path}/{x}.py", bridges_exception))
+    files = list(filter(lambda file: file.endswith(".py") and not file.endswith(
+        "__init__.py") and not file in bridges_exception_path, files))
     print(files)
     for file in files:
         route_name = file.split("/")[-1][:-3]
@@ -25,8 +31,9 @@ def load_bridges() -> list[Bridge]:
         bridges.append(module.bridge)
     return bridges
 
+
 async def auto_update():
-    bridges = load_bridges()    
+    bridges = load_bridges()
     await asyncio.gather(*(bridge.run_once() for bridge in bridges))
 
     # await asyncio.gather(

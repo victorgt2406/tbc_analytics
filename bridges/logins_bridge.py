@@ -21,7 +21,8 @@ class LoginsBridge(Bridge):
         url_filter = f"$filter=createdDateTime ge {end_date.strftime(
             "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {start_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
 
-        await self.elk.bulk_docs((await self.mg.query(f"{url}?{url_filter}"))[0], index)
+        # Saves to bulk_docs the data from msgraph using the url and the filter with a transformer to add @timestamp
+        await self.elk.bulk_docs(list(map(lambda x: {**x, "@timestamp": x["createdDateTime"]}, (await self.mg.query(f"{url}?{url_filter}"))[0])), index)
 
 
 bridge = LoginsBridge()
