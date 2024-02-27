@@ -1,4 +1,8 @@
-"""MsGraph abstraction"""
+"""
+BORKED!!
+
+MsGraph and Elasticsearch abstraction
+"""
 import os
 from datetime import datetime
 import asyncio

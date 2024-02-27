@@ -72,7 +72,7 @@ class Elk:
         """
         docs_es = self.to_esdocs(docs, index, id_key)
         print(f"Elasticsearch: {
-              len(docs)} docs where transformed to be indexed")
+              len(docs)} docs where transformed to be indexed at {index}")
         threshold = load_config().get("elk", {}).get("threshold", 500)
         if len(docs) > threshold:
             def divide_list(arr: list, n: int):
@@ -87,7 +87,7 @@ class Elk:
                     break
                 else:
                     print(f"Elasticsearch: ({
-                          i+1}/{len_lists}) {len(list_docs_es)} docs where index at {index}")
+                          i+1}/{len_lists}) {len(list_docs_es)//2} docs where index at {index}")
         elif len(docs) > 0:
             res = self.es.bulk(operations=docs_es)
             print(f"Elasticsearch: (1/1) {len(docs)

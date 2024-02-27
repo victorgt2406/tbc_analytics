@@ -32,13 +32,9 @@ def load_bridges() -> list[Bridge]:
     return bridges
 
 
-async def auto_update():
+async def deamon():
+    "Loads all the bridges to an infinit loop"
     bridges = load_bridges()
     await asyncio.gather(*(bridge.automatic_mode() for bridge in bridges))
 
-    # await asyncio.gather(
-    #     em.auto_update_basicdata(),
-    #     em.auto_update_logins()
-    # )
-
-asyncio.run(auto_update())
+asyncio.run(deamon())
