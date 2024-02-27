@@ -12,7 +12,8 @@ class Bridge(ABC):
     def __init__(self, s_sleep: float = 3600) -> None:
         self.sleep: float = s_sleep
         self._stop = False
-        self.setup()
+        self.elk: Elk | None = None
+        self.mg: Msgraph | None = None
 
     def start(self):
         "Start automatic mode"
@@ -35,11 +36,13 @@ class Bridge(ABC):
     async def automatic_mode(self):
         "Runs update data indefinitely ultil it is stopped"
         while not self._stop:
+            self.setup()
             await self.update_data()
             await asyncio.sleep(self.sleep)
 
     async def run_once(self):
         "Runs one update data"
+        self.setup()
         await self.update_data()
 
 
@@ -52,5 +55,8 @@ class BasicBridge(Bridge):
         super().__init__(s_sleep)
 
     async def update_data(self):
-        for url in self.urls:
-            await self.elk.bulk_docs((await self.mg.query(url))[0], self.index)
+        if self.elk and self.mg:
+            for url in self.urls:
+                await self.elk.bulk_docs((await self.mg.query(url))[0], self.index)
+        else:
+            print("BasicBridge: ERROR ELK or MSGRAPH are None")

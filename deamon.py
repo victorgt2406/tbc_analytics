@@ -34,7 +34,7 @@ def load_bridges() -> list[Bridge]:
 
 async def auto_update():
     bridges = load_bridges()
-    await asyncio.gather(*(bridge.run_once() for bridge in bridges))
+    await asyncio.gather(*(bridge.automatic_mode() for bridge in bridges))
 
     # await asyncio.gather(
     #     em.auto_update_basicdata(),
