@@ -58,7 +58,7 @@ class ElkMsgraph:
         index = "logs-ms_singins"
         if(start_date is None):
             start_date = datetime.now()
-        if(end_date is None):
+        if(not end_date):
             end_date = last_login_date(self.elk.es)
 
         print(f"Logins: Last update date {end_date}")
