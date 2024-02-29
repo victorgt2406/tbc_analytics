@@ -21,6 +21,7 @@ class Elk:
     """
 
     def __init__(self) -> None:
+        self.es:Elasticsearch | None = None
         self.setup_connections()
 
     def setup_connections(self):
@@ -70,27 +71,30 @@ class Elk:
         - `index`: The Elasticsearch index where the documents will be stored.
         - `id_key="id"`: The key in each document dictionary that contains the document's ID. The default key is `"id"`.
         """
-        docs_es = self.to_esdocs(docs, index, id_key)
-        print(f"Elasticsearch: {
-              len(docs)} docs where transformed to be indexed at {index}")
-        threshold = load_config().get("elk", {}).get("threshold", 500)
-        if len(docs) > threshold:
-            def divide_list(arr: list, n: int):
-                return [arr[i:i + n] for i in range(0, len(arr), n)]
+        if self.es is not None:
+            docs_es = self.to_esdocs(docs, index, id_key)
+            print(f"Elasticsearch: {
+                len(docs)} docs where transformed to be indexed at {index}")
+            threshold = load_config().get("elk", {}).get("threshold", 500)
+            if len(docs) > threshold:
+                def divide_list(arr: list, n: int):
+                    return [arr[i:i + n] for i in range(0, len(arr), n)]
 
-            lists_docs_es = divide_list(docs_es, threshold)
-            len_lists = len(lists_docs_es)
-            for i, list_docs_es in enumerate(lists_docs_es):
-                res = self.es.bulk(operations=list_docs_es)
-                await asyncio.sleep(0.5)
-                if "errors" in res and res["errors"]:
-                    break
-                else:
-                    print(f"Elasticsearch: ({
-                          i+1}/{len_lists}) {len(list_docs_es)//2} docs where index at {index}")
-        elif len(docs) > 0:
-            res = self.es.bulk(operations=docs_es)
-            print(f"Elasticsearch: (1/1) {len(docs)
-                                          } docs where index at {index} ")
-        print(f"Elasticsearch: {
-                len(docs)} docs where succesfully indexed at {index}")
+                lists_docs_es = divide_list(docs_es, threshold)
+                len_lists = len(lists_docs_es)
+                for i, list_docs_es in enumerate(lists_docs_es):
+                    res = self.es.bulk(operations=list_docs_es)
+                    await asyncio.sleep(0.5)
+                    if "errors" in res and res["errors"]:
+                        break
+                    else:
+                        print(f"Elasticsearch: ({
+                            i+1}/{len_lists}) {len(list_docs_es)//2} docs where index at {index}")
+            elif len(docs) > 0:
+                res = self.es.bulk(operations=docs_es)
+                print(f"Elasticsearch: (1/1) {len(docs)
+                                            } docs where index at {index} ")
+            print(f"Elasticsearch: {
+                    len(docs)} docs where succesfully indexed at {index}")
+        else:
+            print("Elasticsearch: ERROR not connected")
