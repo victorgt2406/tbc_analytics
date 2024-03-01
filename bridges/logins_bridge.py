@@ -12,7 +12,7 @@ class LoginsBridge(Bridge):
     async def update_data(self):
         """
         Connects to msgraph API to get the auditlog logins data and updates it to Elasticsearch
-        
+
         1. Get the data throw MsGraph
         2. Transform the data to save createdDateTime as @timestamp
         3. Save it in Elasticsearch
@@ -28,6 +28,14 @@ class LoginsBridge(Bridge):
                 "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {start_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
 
             # Saves to bulk_docs the data from msgraph using the url and the filter with a transformer to add @timestamp
+            await self.elk.bulk_docs(list(map(lambda x: {**x, "@timestamp": x["createdDateTime"]}, (await self.mg.query(f"{url}?{url_filter}"))[0])), index)
+
+            end_date = datetime(2024,2,1)
+
+            url = "https://graph.microsoft.com/beta/auditLogs/signIns"
+            url_filter = f"$filter=signInEventTypes/any(t: t eq 'nonInteractiveUser') and createdDateTime ge {end_date.strftime(
+                "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {start_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
+
             await self.elk.bulk_docs(list(map(lambda x: {**x, "@timestamp": x["createdDateTime"]}, (await self.mg.query(f"{url}?{url_filter}"))[0])), index)
 
 
