@@ -21,7 +21,6 @@ class Elk:
     """
 
     def __init__(self) -> None:
-        self.es:Elasticsearch | None = None
         self.setup_connections()
 
     def setup_connections(self):

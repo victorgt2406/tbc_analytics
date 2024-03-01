@@ -1,9 +1,10 @@
 "Load config.json"
 import json
+from typing import Any
 
 FILE_PATH = "./config.json"
 
-def load_config() -> dict:
+def load_config() -> dict[str, Any]:
     "loads the config data"
     with open(FILE_PATH, 'r', encoding="utf-8") as file:
         return json.load(file)

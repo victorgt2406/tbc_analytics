@@ -8,10 +8,14 @@
         "basicData": 1800,
         "logins": 120
     },
-    "indexes": {
-        "users": "ms-users",
-        "deviceAppManagement/mobileApps": "ms-apps",
-        "deviceManagement/managedDevices": "ms-devices",
-        "auditLogs/signIns": "logs-ms-singins"
+    "indices": {
+        "users": {
+            "name": "ms_users",
+            "licenses": {
+                "26124093-3d78-432b-b5dc-48bf992543d5": "threat_protection",
+                "05e9a617-0261-4cee-bb44-138d3ef5d965": "E3",
+                "e0dfc8b9-9531-4ec8-94b4-9fec23b05fc8": "x-account"
+            }
+        }
     }
 }
