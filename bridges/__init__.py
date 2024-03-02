@@ -15,11 +15,9 @@ class Bridge(ABC):
         self.index = index
         self.elk: Elk | None = None
         self.mg: Msgraph | None = None
-        config  = load_config()
-        if index not in config["bridges"]:
-            raise Exception(f"CONFIG ERROR: {index} bridge has not config in ./config.json")
-        self.config = config["bridges"][index]
-        self.sleep = self.config["sleep"]
+        config:dict  = load_config().get("bridges",{})
+        self.config:dict = config.get(index, {})
+        self.sleep:float = self.config.get("sleep", 3600)
 
     def start(self):
         "Start automatic mode"

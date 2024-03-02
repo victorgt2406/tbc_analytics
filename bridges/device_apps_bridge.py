@@ -21,7 +21,7 @@ class DeviceAppsBridge(Bridge):
             devices = list((await self.mg.query("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/"))[0])
 
             # The device fields to keep
-            device_fields = self.config["device_fields"]
+            device_fields = self.config.get("device_fields", ["id", "deviceName", "userId", "userDisplayName", "emailAddress"])
             
             # Devices cleanning
             devices = list(map(lambda x: tuple_to_dict(

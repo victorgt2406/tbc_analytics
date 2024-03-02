@@ -25,7 +25,7 @@ class UserBridge(Bridge):
         super().__init__("ms_users")
     async def update_data(self):
         if self.elk and self.mg and self.elk.es:
-            mg_licenses = self.config["licenses"]
+            mg_licenses = self.config.get("licenses", {})
             for url in URLS:
                 await self.elk.bulk_docs((await self.mg.query(url))[0], INDEX)
             users = (await self.mg.query("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))[0]
