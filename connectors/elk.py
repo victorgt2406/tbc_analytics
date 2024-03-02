@@ -23,7 +23,7 @@ class Elk:
     def __init__(self) -> None:
         self.setup_connections()
         self.config:dict = load_config().get("elk",{})
-        self.sleep = self.config["sleep"]
+        self.sleep = self.config.get("sleep", 0.5)
 
     def setup_connections(self):
         """
