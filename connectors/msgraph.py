@@ -11,6 +11,8 @@ import aiohttp
 from dotenv import load_dotenv
 from msal import ConfidentialClientApplication
 
+from utils.config import load_config
+
 class Msgraph:
     """
     A class that abstract all MsGraph API
@@ -22,7 +24,8 @@ class Msgraph:
     def __init__(self) -> None:
         """All the MsGraph opetations"""
         self.headers = self._get_headers()
-        self.last_auditlogs_update: datetime | None = None
+        self.config:dict = load_config().get("ms_graph", {})
+        self.sleep:float = self.config.get("sleep", 0.2)
 
     def _get_headers(self) -> dict[str,str]:
         """Returns the headers required to connect to MsGraph"""
@@ -58,5 +61,5 @@ class Msgraph:
                         print(f"MsGraph: {graph_url} runned sucesfully")
                     all_data.extend(res_json.get('value', []))
                     graph_url = res_json.get('@odata.nextLink', None)
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(self.sleep)
         return all_data, success

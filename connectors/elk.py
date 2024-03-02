@@ -22,6 +22,8 @@ class Elk:
 
     def __init__(self) -> None:
         self.setup_connections()
+        self.config:dict = load_config().get("elk",{})
+        self.sleep = self.config.get("sleep", 0.5)
 
     def setup_connections(self):
         """
@@ -70,11 +72,11 @@ class Elk:
         - `index`: The Elasticsearch index where the documents will be stored.
         - `id_key="id"`: The key in each document dictionary that contains the document's ID. The default key is `"id"`.
         """
-        if self.es is not None:
+        if self.es:
             docs_es = self.to_esdocs(docs, index, id_key)
             print(f"Elasticsearch: {
                 len(docs)} docs where transformed to be indexed at {index}")
-            threshold = load_config().get("elk", {}).get("threshold", 500)
+            threshold = self.config.get("threshold", 500)
             if len(docs) > threshold:
                 def divide_list(arr: list, n: int):
                     return [arr[i:i + n] for i in range(0, len(arr), n)]
@@ -83,7 +85,7 @@ class Elk:
                 len_lists = len(lists_docs_es)
                 for i, list_docs_es in enumerate(lists_docs_es):
                     res = self.es.bulk(operations=list_docs_es)
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(self.sleep)
                     if "errors" in res and res["errors"]:
                         break
                     else:

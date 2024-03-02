@@ -1,6 +1,11 @@
+"""
+User Bridge extends Bridge abstract class
+
+By Víctor Gutiérrez Tovar
+"""
+
 from bridges import Bridge
 from queries.last_user_login_date import last_user_login_date
-from utils.config import load_config
 
 URLS = ["https://graph.microsoft.com/v1.0/users",
         "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
@@ -9,11 +14,18 @@ SLEEP = 600
 
 
 class UserBridge(Bridge):
+    """
+    User Bridge: updates the user data
+    - basic data
+    - licenses per user
+    - last login interactive
+    - last login non interactive
+    """
     def __init__(self) -> None:
-        super().__init__(SLEEP)
+        super().__init__("ms_users")
     async def update_data(self):
         if self.elk and self.mg and self.elk.es:
-            mg_licenses = load_config()["indices"]["users"]["licenses"]
+            mg_licenses = self.config.get("licenses", {})
             for url in URLS:
                 await self.elk.bulk_docs((await self.mg.query(url))[0], INDEX)
             users = (await self.mg.query("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))[0]
@@ -24,9 +36,9 @@ class UserBridge(Bridge):
                 last_singin:str = last_user_login_date(user_id, es)
 
                 licenses = user["assignedLicenses"]
-                for license in licenses:
-                    if license["skuId"] in mg_licenses:
-                        license["name"] = mg_licenses[license["skuId"]]
+                for l in licenses:
+                    if l["skuId"] in mg_licenses:
+                        l["name"] = mg_licenses[l["skuId"]]
 
 
                 doc = {"id": user_id, "last_singin": last_singin, "assignedLicenses": licenses}

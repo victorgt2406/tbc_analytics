@@ -7,7 +7,7 @@ from queries.last_login_date import last_login_date
 
 class LoginsBridge(Bridge):
     def __init__(self) -> None:
-        super().__init__(120)
+        super().__init__("log-ms_singins")
 
     async def update_data(self):
         """
