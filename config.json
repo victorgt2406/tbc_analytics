@@ -1,21 +1,35 @@
 {
-    "elk": {
-        "threshold": 500
-    },
     "sleep": {
         "loadMsGraph": 1,
         "uploadElk": 1,
         "basicData": 1800,
         "logins": 120
     },
-    "indices": {
-        "users": {
-            "name": "ms_users",
+    "bridges": {
+        "ms_users": {
+            "sleep": 3600,
             "licenses": {
                 "26124093-3d78-432b-b5dc-48bf992543d5": "threat_protection",
                 "05e9a617-0261-4cee-bb44-138d3ef5d965": "E3",
                 "e0dfc8b9-9531-4ec8-94b4-9fec23b05fc8": "x-account"
             }
+        },
+        "log-ms_singins": {
+            "sleep": 120
+        },
+        "ms_devices": {
+            "sleep": 3600
+        },
+        "ms_device_apps":{
+            "sleep": 3600,
+            "device_fields": ["id", "deviceName", "userId", "userDisplayName", "emailAddress", "operatingSystem", "osVersion", "lastSyncDateTime"]
         }
+    },
+    "ms_graph": {
+        "sleep": 0.5
+    },
+    "elk": {
+        "sleep": 1,
+        "threshold": 500
     }
 }

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import asyncio
 from connectors.elk import Elk
 from connectors.msgraph import Msgraph
+from utils.config import load_config
 
 
 class Bridge(ABC):
@@ -9,11 +10,16 @@ class Bridge(ABC):
     Abstract class of bridge
     """
 
-    def __init__(self, s_sleep: float = 3600) -> None:
-        self.sleep: float = s_sleep
+    def __init__(self, index: str) -> None:
         self._stop = False
+        self.index = index
         self.elk: Elk | None = None
         self.mg: Msgraph | None = None
+        config  = load_config()
+        if index not in config["bridges"]:
+            raise Exception(f"CONFIG ERROR: {index} bridge has not config in ./config.json")
+        self.config = config["bridges"][index]
+        self.sleep = self.config["sleep"]
 
     def start(self):
         "Start automatic mode"
@@ -49,10 +55,10 @@ class Bridge(ABC):
 class BasicBridge(Bridge):
     "Basic Brige"
 
-    def __init__(self, urls: list[str], index: str, s_sleep: float = 3600) -> None:
+    def __init__(self, urls: list[str], index: str) -> None:
         self.urls = urls
         self.index = index
-        super().__init__(s_sleep)
+        super().__init__(index)
 
     async def update_data(self):
         if self.elk and self.mg:
