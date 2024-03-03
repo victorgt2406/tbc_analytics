@@ -29,7 +29,7 @@
         "sleep": 0.1
     },
     "elk": {
-        "sleep": 1,
-        "threshold": 500
+        "sleep": 0.8,
+        "threshold": 1000
     }
 }
