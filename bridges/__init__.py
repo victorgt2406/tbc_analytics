@@ -15,9 +15,12 @@ class Bridge(ABC):
         self.index = index
         self.elk: Elk | None = None
         self.mg: Msgraph | None = None
-        config:dict  = load_config().get("bridges",{})
-        self.config:dict = config.get(index, {})
-        self.sleep:float = self.config.get("sleep", 3600)
+        config: dict = load_config().get("bridges", {})
+        self.config: dict = config.get(index, {})
+        if not self.config:
+            print(f"WARNING: Bridge with index {index} has an empty configuration.")
+
+        self.sleep: float = self.config.get("sleep", 3600)
 
     def start(self):
         "Start automatic mode"

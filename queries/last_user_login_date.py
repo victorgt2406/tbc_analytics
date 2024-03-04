@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch
 
-def last_user_login_date(user_id:str, es: Elasticsearch, index="logs-ms_singins") -> str:
+def last_user_login_date(user_id:str, es: Elasticsearch, index) -> str:
     "Last user login query"
     try:
         res = es.search(

@@ -10,7 +10,7 @@ from typing import Any
 from utils.config import load_config
 from connectors.elk import Elk
 from connectors.msgraph import Msgraph
-from queries.last_login_date import last_login_date
+from queries.last_login_date import last_interactive_signin_date
 
 BASIC_DATA = [
     {
@@ -59,7 +59,7 @@ class ElkMsgraph:
         if(start_date is None):
             start_date = datetime.now()
         if(not end_date):
-            end_date = last_login_date(self.elk.es)
+            end_date = last_interactive_signin_date(self.elk.es)
 
         print(f"Logins: Last update date {end_date}")
         url = "https://graph.microsoft.com/v1.0/auditLogs/signIns"

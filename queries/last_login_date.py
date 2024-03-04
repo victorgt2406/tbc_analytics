@@ -3,11 +3,10 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 
 
-def last_login_date(es:Elasticsearch) -> datetime:
+def last_login_date(es:Elasticsearch, index) -> datetime:
     """
     Get the last login date
     """
-    index = "logs-ms_singins"
     try:
         last_date = es.search(
             index=index,
@@ -23,4 +22,4 @@ def last_login_date(es:Elasticsearch) -> datetime:
         return datetime.strptime(last_date, "%Y-%m-%dT%H:%M:%S.%fZ")
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(e)
-        return datetime(2023, 11, 1)
+        return datetime(1900, 1, 1)

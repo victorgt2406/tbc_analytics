@@ -21,8 +21,10 @@ class UserBridge(Bridge):
     - last login interactive
     - last login non interactive
     """
+
     def __init__(self) -> None:
         super().__init__("ms_users")
+
     async def update_data(self):
         if self.elk and self.mg and self.elk.es:
             mg_licenses = self.config.get("licenses", {})
@@ -33,15 +35,22 @@ class UserBridge(Bridge):
             lastest_conections_docs = []
             for user in users:
                 user_id = user["id"]
-                last_singin:str = last_user_login_date(user_id, es)
+                last_signin_interactive: str = last_user_login_date(
+                    user_id, es, "logs-ms_signins_interactive")
+                last_signin_noninteractive: str = last_user_login_date(
+                    user_id, es, "logs-ms_signins_noninteractive")
 
                 licenses = user["assignedLicenses"]
                 for l in licenses:
                     if l["skuId"] in mg_licenses:
                         l["name"] = mg_licenses[l["skuId"]]
 
-
-                doc = {"id": user_id, "last_singin": last_singin, "assignedLicenses": licenses}
+                doc = {
+                    "id": user_id,
+                    "last_signin_interative": last_signin_interactive,
+                    "assignedLicenses": licenses,
+                    "last_signin_noninteractive": last_signin_noninteractive
+                }
                 lastest_conections_docs.append(doc)
             await self.elk.bulk_docs(lastest_conections_docs, INDEX)
 

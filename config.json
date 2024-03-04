@@ -6,6 +6,9 @@
         "logins": 120
     },
     "bridges": {
+        "exceptions": [
+            "device_apps_bridge"
+        ],
         "ms_users": {
             "sleep": 3600,
             "licenses": {
@@ -14,7 +17,10 @@
                 "e0dfc8b9-9531-4ec8-94b4-9fec23b05fc8": "x-account"
             }
         },
-        "log-ms_singins": {
+        "logs-ms_signins_noninteractive": {
+            "sleep": 120
+        },
+        "logs-ms_signins_interactive": {
             "sleep": 120
         },
         "ms_devices": {
