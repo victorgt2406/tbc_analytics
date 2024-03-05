@@ -42,10 +42,14 @@ class Msgraph:
 
         token_res = ms.acquire_token_for_client(scopes=scope)
         token: str = token_res.get("access_token")  # type: ignore
+        if token:
+            print("MsGraph: token created")
+        else:
+            print("WARNING Msgraph: token is None")
         return {'Authorization': f'Bearer {token}'}  # token microsoft
 
     async def query(self, graph_url: str, get_all_data=True) -> tuple[list[dict[str,Any]], bool]:
-        """Connects to msgraph API to return all the data request it"""
+        """Connects to msgraph API and returns all the data requested"""
         all_data = []
         success = True
         in_while = False
@@ -58,7 +62,7 @@ class Msgraph:
                         print(f"MsGraph: ERROR {graph_url} failed\n\t{res_json["error"]["code"]} -- {res_json["error"]["message"]}")
                         success = False
                     else:
-                        print(f"MsGraph: {graph_url} runned sucesfully")
+                        print(f"MsGraph: {graph_url} runned successfully")
                     all_data.extend(res_json.get('value', []))
                     graph_url = res_json.get('@odata.nextLink', None)
                     await asyncio.sleep(self.sleep)

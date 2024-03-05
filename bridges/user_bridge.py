@@ -6,6 +6,7 @@ By Víctor Gutiérrez Tovar
 
 from bridges import Bridge
 from queries.last_user_login_date import last_user_login_date
+from utils.compare_str_dates import compare_str_dates
 
 URLS = ["https://graph.microsoft.com/v1.0/users",
         "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
@@ -39,6 +40,7 @@ class UserBridge(Bridge):
                     user_id, es, "logs-ms_signins_interactive")
                 last_signin_noninteractive: str = last_user_login_date(
                     user_id, es, "logs-ms_signins_noninteractive")
+                last_signin = last_signin_interactive if compare_str_dates(last_signin_interactive, last_signin_noninteractive) else last_signin_noninteractive
 
                 licenses = user["assignedLicenses"]
                 for l in licenses:
@@ -49,7 +51,8 @@ class UserBridge(Bridge):
                     "id": user_id,
                     "last_signin_interative": last_signin_interactive,
                     "assignedLicenses": licenses,
-                    "last_signin_noninteractive": last_signin_noninteractive
+                    "last_signin_noninteractive": last_signin_noninteractive,
+                    "last_signin": last_signin
                 }
                 lastest_conections_docs.append(doc)
             await self.elk.bulk_docs(lastest_conections_docs, INDEX)
