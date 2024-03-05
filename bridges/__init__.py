@@ -44,8 +44,11 @@ class Bridge(ABC):
         "Runs update data indefinitely ultil it is stopped"
         while not self._stop:
             self.setup()
-            await self.update_data()
-            await asyncio.sleep(self.sleep)
+            try:
+                await self.update_data()
+                await asyncio.sleep(self.sleep)
+            except Exception as e: # pylint: disable=broad-exception-caught
+                print(f"ERROR automatic_mode {self.index} -- {e}")
 
     async def run_once(self):
         "Runs one update data"

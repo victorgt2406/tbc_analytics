@@ -32,7 +32,8 @@
         }
     },
     "ms_graph": {
-        "sleep": 0.1
+        "sleep": 0.1,
+        "timeout": 60
     },
     "elk": {
         "sleep": 0.8,

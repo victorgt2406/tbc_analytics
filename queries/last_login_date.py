@@ -19,7 +19,8 @@ def last_login_date(es:Elasticsearch, index) -> datetime:
                 }
             }
         )["aggregations"]["latestDate"]["value_as_string"]
-        return datetime.strptime(last_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        # return datetime.strptime(last_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        return datetime.fromisoformat(last_date)
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(e)
         return datetime(1900, 1, 1)
