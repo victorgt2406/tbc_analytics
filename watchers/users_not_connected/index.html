@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='UTF-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <title>Inactive Users Report</title>
+    </head>
+    <body>
+        <h1>{{ctx.payload.hits.total}} users are inactive with licenses</h1>
+        <a
+            href='https://2d52c000a5a04d1ba47f80e4772ca253.us-central1.gcp.cloud.es.io:9243/app/discover#/view/3055e8cb-d333-4865-9eb1-20b567a30edd?_g=%28%29'
+            >Discover</a
+        >
+        <a
+            href='https://2d52c000a5a04d1ba47f80e4772ca253.us-central1.gcp.cloud.es.io:9243/app/dashboards#/view/b4c67aff-daf2-4ffb-b61a-14f0fe833522?_g=()'
+            >Dashboard</a
+        >
+        <h2>Below is the list of users who did not connect in the last month:</h2>
+        <table style='border: 1px solid black'>
+            <tr>
+                <th>User</th>
+                <th>Last Interactive Sign-in</th>
+                <th>Last Non-Interactive Sign-in</th>
+                <th>Licenses</th>
+                <th>Office</th>
+            </tr>
+            {{#ctx.payload.hits.hits}}
+            <tr>
+                <td>{{_source.displayName}}</td>
+                <td>{{_source.last_signin_interative}}</td>
+                <td>{{_source.last_signin_noninteractive}}</td>
+                <td>
+                    {{#_source.assignedLicenses.name}}{{.}}{{^last}},
+                    {{/last}}{{/_source.assignedLicenses.name}}
+                </td>
+                <td>{{_source.officeLocation}}</td>
+            </tr>
+            {{/ctx.payload.hits.hits}}
+        </table>
+    </body>
+</html>
