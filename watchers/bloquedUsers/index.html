@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Bloqued users</title>
+</head>
+<body>
+    <h1>{{ctx.payload.hits.total}} error logs found</h1>
+        <a href='https://2d52c000a5a04d1ba47f80e4772ca253.us-central1.gcp.cloud.es.io:9243/app/discover#/view/3055e8cb-d333-4865-9eb1-20b567a30edd?_g=%28%29'>Discover</a>
+        <table>
+          <tr>
+            <th>userDisplayName</th>
+            <th>count</th>
+          </tr>
+          {{#ctx.payload.aggregations.users.buckets}}
+          <tr>
+            <td>{{key}}</td>
+            <td>{{doc_count}}</td>
+          </tr>
+          {{/ctx.payload.aggregations.users.buckets}}
+          </table>
+</body>
+</html>

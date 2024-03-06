@@ -1,0 +1,75 @@
+{
+  "trigger": {
+    "schedule": {
+      "daily": {
+        "at": {
+          "hour": [
+            8,
+            10,
+            12,
+            14,
+            16
+          ],
+          "minute": 0
+        }
+      }
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "range": {
+                    "@timestamp": {
+                      "gte": "now-2h/h",
+                      "lte": "now"
+                    }
+                  }
+                },
+                {
+                  "term": {
+                    "status.errorCode": "50053"
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "users": {
+              "terms": {
+                "field": "userDisplayName.keyword",
+                "size": 20
+              }
+            }
+          }
+        },
+        "indices": [
+          "logs-ms_signins*interactive"
+        ]
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.hits.total": {
+        "gte": 1
+      }
+    }
+  },
+  "actions": {
+    "send_email": {
+      "email": {
+        "to": "victor.gutierrez@tabacaleracigar.com",
+        "subject": "Watcher Notification bloqued users",
+        "body": {
+          "html": "<!DOCTYPE html><html lang='en'><head>    <meta charset='UTF-8'>    <meta name='viewport' content='width=device-width, initial-scale=1.0'>    <title>Bloqued users</title></head><body>    <h1>{{ctx.payload.hits.total}} error logs found</h1>        <a href='https://2d52c000a5a04d1ba47f80e4772ca253.us-central1.gcp.cloud.es.io:9243/app/discover#/view/3055e8cb-d333-4865-9eb1-20b567a30edd?_g=%28%29'>Discover</a>        <table>          <tr>            <th>User Display Name</th>            <th>Count</th>          </tr>          {{#ctx.payload.aggregations.users.buckets}}          <tr>            <td>{{key}}</td>            <td>{{doc_count}}</td>          </tr>          {{/ctx.payload.aggregations.users.buckets}}          </table></body></html>"
+        }
+      }
+    }
+  }
+}
