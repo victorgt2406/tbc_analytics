@@ -8,3 +8,4 @@ fastapi
 uvicorn[standard]
 python-dotenv
 aiohttp
+aiofiles

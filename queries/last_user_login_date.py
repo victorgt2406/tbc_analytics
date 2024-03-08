@@ -1,29 +1,37 @@
-from elasticsearch import Elasticsearch
+from itertools import groupby
+from connectors.json_filesystem import JsonFilesystem
 
-def last_user_login_date(user_id:str, es: Elasticsearch, index) -> str:
+async def last_user_login_date(user_id:str, jsonfs: JsonFilesystem, name:str) -> str:
     "Last user login query"
     try:
-        res = es.search(
-            index=index,
-            query={
-                "term": {
-                    "userId.keyword": user_id
-                }},
-            sort=[
-                {
-                    "createdDateTime": {
-                        "order": "desc"
-                    }
-                }
-            ],
-            size=1
-        )
-        if(user_id == "a3698c4e-1397-4f98-8046-452a8a42b28c"):
-            print(res["hits"])
-        if(res["hits"]["total"]["value"]>0):
-            return res["hits"]["hits"][0]["_source"]["createdDateTime"]
+        docs = await jsonfs.load_docs(name)
+        docs_sorted = sorted(docs, key=lambda x: x["userId"])
+        max_values = {}
+        for key, group in groupby(docs_sorted, key=lambda x: x["userId"]):
+            max_values[key] = max(group, key=lambda x: x["createdDateTime"])["createdDateTime"]
+        # res = es.search(
+        #     index=index,
+        #     query={
+        #         "term": {
+        #             "userId.keyword": user_id
+        #         }},
+        #     sort=[
+        #         {
+        #             "createdDateTime": {
+        #                 "order": "desc"
+        #             }
+        #         }
+        #     ],
+        #     size=1
+        # )
+        # if(res["hits"]["total"]["value"]>0):
+        #     return res["hits"]["hits"][0]["_source"]["createdDateTime"]
+        # else:
+        #     return "1900-01-01T00:00:00Z"
+        if(user_id in max_values):
+            return max_values[user_id]
         else:
-            return "1900-01-01T00:00:00Z"
+            return "1900-01-01T00:00:00Z"   
 
     except Exception as e:
         print(f"Last User Login: ERROR {e}")
