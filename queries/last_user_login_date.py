@@ -18,14 +18,12 @@ def last_user_login_date(user_id:str, es: Elasticsearch, index) -> str:
             ],
             size=1
         )
-        if(user_id == "a3698c4e-1397-4f98-8046-452a8a42b28c"):
-            print(res["hits"])
         if(res["hits"]["total"]["value"]>0):
             return res["hits"]["hits"][0]["_source"]["createdDateTime"]
         else:
             return "1900-01-01T00:00:00Z"
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         print(f"Last User Login: ERROR {e}")
         return "1900-01-01T00:00:00Z"
         # return None

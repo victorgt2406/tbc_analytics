@@ -5,8 +5,9 @@ By Víctor Gutiérrez Tovar
 """
 
 from bridges import Bridge
-from queries_json.last_user_login_date import last_user_login_date
+from queries.last_user_login_date import last_user_login_date
 from utils.compare_str_dates import compare_str_dates
+from utils.is_x_percent_done import is_x_percent_done
 
 URLS = ["https://graph.microsoft.com/v1.0/users",
         "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
@@ -27,38 +28,39 @@ class UserBridge(Bridge):
         super().__init__("ms_users")
 
     async def update_data(self):
-        if self.elk and self.mg and self.elk.es:
-            mg_licenses = self.config.get("licenses", {})
-            for url in URLS:
-                await self.elk.bulk_docs((await self.mg.query(url))[0], INDEX)
-            users = (await self.mg.query("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))[0]
-            es = self.elk.es
-            lastest_conections_docs = []
-            for user in users:
-                user_id = user["id"]
-                last_signin_interactive: str = last_user_login_date(
-                    user_id, es, "logs-ms_signins_interactive")
-                last_signin_noninteractive: str = last_user_login_date(
-                    user_id, es, "logs-ms_signins_noninteractive")
-                last_signin = last_signin_interactive if compare_str_dates(last_signin_interactive, last_signin_noninteractive) else last_signin_noninteractive
+        mg_licenses = self.config.get("licenses", {})
+        for url in URLS:
+            await self.elk.bulk_docs((await self.mg.query(url))[0], INDEX)
+        users = (await self.mg.query("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))[0]
+        es = self.elk.es
+        lastest_conections_docs = []
+        for i, user in enumerate(users):
+            if is_x_percent_done(i,len(users), 10):
+                print(f"User bridge: {i}/{len(users)} user logins read")
 
-                licenses = user["assignedLicenses"]
-                for l in licenses:
-                    if l["skuId"] in mg_licenses:
-                        l["name"] = mg_licenses[l["skuId"]]
+            user_id = user["id"]
 
-                doc = {
-                    "id": user_id,
-                    "last_signin_interative": last_signin_interactive,
-                    "assignedLicenses": licenses,
-                    "last_signin_noninteractive": last_signin_noninteractive,
-                    "last_signin": last_signin
-                }
-                lastest_conections_docs.append(doc)
-            await self.elk.bulk_docs(lastest_conections_docs, INDEX)
+            last_signin_interactive: str = last_user_login_date(
+                user_id, es, "logs-ms_signins_interactive")
+            last_signin_noninteractive: str = last_user_login_date(
+                user_id, es, "logs-ms_signins_noninteractive")
+            last_signin = last_signin_interactive if compare_str_dates(
+                last_signin_interactive, last_signin_noninteractive) else last_signin_noninteractive
 
-        else:
-            print("BasicBridge: ERROR ELK or MSGRAPH are None")
+            licenses = user["assignedLicenses"]
+            for l in licenses:
+                if l["skuId"] in mg_licenses:
+                    l["name"] = mg_licenses[l["skuId"]]
+
+            doc = {
+                "id": user_id,
+                "last_signin_interative": last_signin_interactive,
+                "assignedLicenses": licenses,
+                "last_signin_noninteractive": last_signin_noninteractive,
+                "last_signin": last_signin
+            }
+            lastest_conections_docs.append(doc)
+        await self.elk.bulk_docs(lastest_conections_docs, INDEX)
 
 
 bridge = UserBridge()

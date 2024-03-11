@@ -1,14 +1,7 @@
 {
-    "sleep": {
-        "loadMsGraph": 1,
-        "uploadElk": 1,
-        "basicData": 1800,
-        "logins": 120
-    },
     "bridges": {
-        "exceptions": [
-            "device_apps_bridge"
-        ],
+        "exceptions": ["device_apps_bridge"],
+        "fail_sleep": 0.2,
         "ms_users": {
             "sleep": 3600,
             "licenses": {
@@ -26,9 +19,18 @@
         "ms_devices": {
             "sleep": 3600
         },
-        "ms_device_apps":{
+        "ms_device_apps": {
             "sleep": 3600,
-            "device_fields": ["id", "deviceName", "userId", "userDisplayName", "emailAddress", "operatingSystem", "osVersion", "lastSyncDateTime"]
+            "device_fields": [
+                "id",
+                "deviceName",
+                "userId",
+                "userDisplayName",
+                "emailAddress",
+                "operatingSystem",
+                "osVersion",
+                "lastSyncDateTime"
+            ]
         }
     },
     "ms_graph": {

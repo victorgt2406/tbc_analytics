@@ -13,9 +13,11 @@ class Bridge(ABC):
     def __init__(self, index: str) -> None:
         self._stop = False
         self.index = index
-        self.elk: Elk | None = None
-        self.mg: Msgraph | None = None
+        # self.elk: Elk | None = None
+        # self.mg: Msgraph | None = None
+        self.setup()
         config: dict = load_config().get("bridges", {})
+        self.fail_sleep = config.get("fail_sleep", 1)
         self.config: dict = config.get(index, {})
         if not self.config:
             print(f"WARNING: Bridge with index {index} has an empty configuration.")
@@ -49,7 +51,7 @@ class Bridge(ABC):
                 await asyncio.sleep(self.sleep)
             except Exception as e: # pylint: disable=broad-exception-caught
                 print(f"ERROR automatic_mode {self.index} -- {e}")
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(self.fail_sleep)
 
     async def run_once(self):
         "Runs one update data"

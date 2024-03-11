@@ -48,7 +48,8 @@ class Msgraph:
         if token:
             print("MsGraph: token created")
         else:
-            print("WARNING Msgraph: token is None")
+            raise ValueError("ERROR Msgraph: token is None, CHECK .env FILE")
+
         return {'Authorization': f'Bearer {token}'}  # token microsoft
 
     async def query(self, graph_url: str, get_all_data=True) -> tuple[list[dict[str, Any]], bool]:
