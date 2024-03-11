@@ -36,7 +36,7 @@ class UserBridge(Bridge):
         lastest_conections_docs = []
         for i, user in enumerate(users):
             if is_x_percent_done(i,len(users), 10):
-                print(f"User bridge: {i}/{len(users)} user logins read")
+                print(f"INFO: User bridge last_login transform {i}/{len(users)}")
 
             user_id = user["id"]
 
