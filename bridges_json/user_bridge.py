@@ -5,7 +5,7 @@ By Víctor Gutiérrez Tovar
 """
 
 from bridges_json import Bridge
-from queries.last_user_login_date import last_user_login_date
+from queries_json.last_user_login_date import last_user_login_date
 from utils.compare_str_dates import compare_str_dates
 
 URLS = ["https://graph.microsoft.com/v1.0/users",
