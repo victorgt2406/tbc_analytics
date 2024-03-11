@@ -49,6 +49,7 @@ class Bridge(ABC):
                 await asyncio.sleep(self.sleep)
             except Exception as e: # pylint: disable=broad-exception-caught
                 print(f"ERROR automatic_mode {self.index} -- {e}")
+                await asyncio.sleep(0.1)
 
     async def run_once(self):
         "Runs one update data"

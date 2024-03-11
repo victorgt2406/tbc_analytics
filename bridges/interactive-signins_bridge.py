@@ -18,13 +18,13 @@ class InteractiveSigninsBridge(Bridge):
         3. Save it in Elasticsearch
         """
         if self.elk and self.elk.es is not None and self.mg:
-            start_date = datetime.now()
-            end_date = last_login_date(self.elk.es, self.index)
-            print(f"INFO InteractiveSignins: Last update date {end_date}")
+            end_date = datetime.now()
+            start_date = last_login_date(self.elk.es, self.index)
+            print(f"INFO InteractiveSignins: Last update date {start_date}")
 
             url = "https://graph.microsoft.com/v1.0/auditLogs/signIns"
-            url_filter = f"$filter=createdDateTime ge {end_date.strftime(
-                "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {start_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
+            url_filter = f"$filter=createdDateTime ge {start_date.strftime(
+                "%Y-%m-%dT%H:%M:%SZ")} and createdDateTime le {end_date.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
 
             await self.elk.bulk_docs(list(map(lambda x: {**x, "@timestamp": x["createdDateTime"]}, (await self.mg.query(f"{url}?{url_filter}"))[0])), self.index)
 
