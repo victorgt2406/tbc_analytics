@@ -69,7 +69,7 @@ class Msgraph:
                             """)
                         success = False
                     else:
-                        print(f"MsGraph: {graph_url} runned successfully")
+                        print(f"MsGraph: {graph_url[:self.config.get("url_slicing", 50)]} runned successfully")
                     all_data.extend(res_json.get('value', []))
                     if get_all_data:
                         graph_url = res_json.get('@odata.nextLink', None)

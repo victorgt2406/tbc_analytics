@@ -1,4 +1,7 @@
+"Bridges"
+
 from abc import ABC, abstractmethod
+import time
 import asyncio
 from connectors.elk import Elk
 from connectors.msgraph import Msgraph
@@ -47,7 +50,12 @@ class Bridge(ABC):
         while not self._stop:
             self.setup()
             try:
+                start_time = time.time()
                 await self.update_data()
+                end_time = time.time()
+
+                total_time = end_time - start_time
+                print(f"INFO: Bridge {self.index}: took {total_time:.2f} secs")
                 await asyncio.sleep(self.sleep)
             except Exception as e: # pylint: disable=broad-exception-caught
                 print(f"ERROR automatic_mode {self.index} -- {e}")
