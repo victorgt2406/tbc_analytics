@@ -13,17 +13,16 @@ class Bridge(ABC):
     Abstract class of bridge
     """
 
-    def __init__(self, index: str) -> None:
+    def __init__(self, name: str) -> None:
         self._stop = False
-        self.index = index
-        # self.elk: Elk | None = None
-        # self.mg: Msgraph | None = None
+        self.name = name
         self.setup()
         config: dict = load_config().get("bridges", {})
         self.fail_sleep = config.get("fail_sleep", 1)
-        self.config: dict = config.get(index, {})
+        self.config: dict = config.get(name, {})
         if not self.config:
-            print(f"WARNING: Bridge with index {index} has an empty configuration.")
+            print(f"WARNING: Bridge with index {
+                  name} has an empty configuration.")
 
         self.sleep: float = self.config.get("sleep", 3600)
 
@@ -55,10 +54,10 @@ class Bridge(ABC):
                 end_time = time.time()
 
                 total_time = end_time - start_time
-                print(f"INFO: Bridge {self.index}: took {total_time:.2f} secs")
+                print(f"INFO: Bridge {self.name}: took {total_time:.2f} secs")
                 await asyncio.sleep(self.sleep)
-            except Exception as e: # pylint: disable=broad-exception-caught
-                print(f"ERROR automatic_mode {self.index} -- {e}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"ERROR automatic_mode {self.name} -- {e}")
                 await asyncio.sleep(self.fail_sleep)
 
     async def run_once(self):
@@ -76,8 +75,8 @@ class BasicBridge(Bridge):
         super().__init__(index)
 
     async def update_data(self):
-        if self.elk and self.mg:
-            for url in self.urls:
-                await self.elk.bulk_docs((await self.mg.query(url))[0], self.index)
-        else:
-            print("BasicBridge: ERROR ELK or MSGRAPH are None")
+        for url in self.urls:
+            await self.elk.save_data(
+                data=await self.mg.fetch_data(url),
+                place=self.index
+            )

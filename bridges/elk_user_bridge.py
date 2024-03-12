@@ -9,11 +9,6 @@ from queries.last_user_login_date import last_user_login_date
 from utils.compare_str_dates import compare_str_dates
 from utils.is_x_percent_done import is_x_percent_done
 
-URLS = ["https://graph.microsoft.com/v1.0/users",
-        "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
-INDEX = "ms_users"
-SLEEP = 600
-
 
 class UserBridge(Bridge):
     """
@@ -28,11 +23,18 @@ class UserBridge(Bridge):
         super().__init__("ms_users")
 
     async def update_data(self):
+        urls = ["https://graph.microsoft.com/v1.0/users",
+        "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
+        
+        # Fecth data from Msgraph and upload it to Elasticsearch
+        for url in urls:
+            data = await self.mg.fetch_data(url)
+            await self.elk.save_data(data, self.name)
+
         mg_licenses = self.config.get("licenses", {})
-        for url in URLS:
-            await self.elk.bulk_docs((await self.mg.query(url))[0], INDEX)
-        users = (await self.mg.query("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))[0]
+        users = (await self.mg.fetch_data("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))
         es = self.elk.es
+
         lastest_conections_docs = []
         for i, user in enumerate(users):
             if is_x_percent_done(i,len(users), 10):
@@ -60,7 +62,7 @@ class UserBridge(Bridge):
                 "last_signin": last_signin
             }
             lastest_conections_docs.append(doc)
-        await self.elk.bulk_docs(lastest_conections_docs, INDEX)
+        await self.elk.save_data(lastest_conections_docs, self.name)
 
 
 bridge = UserBridge()
