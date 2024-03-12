@@ -1,4 +1,7 @@
+"Bridges"
+
 from abc import ABC, abstractmethod
+import time
 import asyncio
 from connectors.elk import Elk
 from connectors.msgraph import Msgraph
@@ -13,9 +16,11 @@ class Bridge(ABC):
     def __init__(self, index: str) -> None:
         self._stop = False
         self.index = index
-        self.elk: Elk | None = None
-        self.mg: Msgraph | None = None
+        # self.elk: Elk | None = None
+        # self.mg: Msgraph | None = None
+        self.setup()
         config: dict = load_config().get("bridges", {})
+        self.fail_sleep = config.get("fail_sleep", 1)
         self.config: dict = config.get(index, {})
         if not self.config:
             print(f"WARNING: Bridge with index {index} has an empty configuration.")
@@ -45,10 +50,16 @@ class Bridge(ABC):
         while not self._stop:
             self.setup()
             try:
+                start_time = time.time()
                 await self.update_data()
+                end_time = time.time()
+
+                total_time = end_time - start_time
+                print(f"INFO: Bridge {self.index}: took {total_time:.2f} secs")
                 await asyncio.sleep(self.sleep)
             except Exception as e: # pylint: disable=broad-exception-caught
                 print(f"ERROR automatic_mode {self.index} -- {e}")
+                await asyncio.sleep(self.fail_sleep)
 
     async def run_once(self):
         "Runs one update data"

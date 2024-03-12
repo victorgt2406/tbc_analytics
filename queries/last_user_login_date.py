@@ -1,39 +1,29 @@
-from itertools import groupby
-from connectors.json_filesystem import JsonFilesystem
+from elasticsearch import Elasticsearch
 
-async def last_user_login_date(user_id:str, jsonfs: JsonFilesystem, name:str) -> str:
+def last_user_login_date(user_id:str, es: Elasticsearch, index) -> str:
     "Last user login query"
     try:
-        docs = await jsonfs.load_docs(name)
-        docs_sorted = sorted(docs, key=lambda x: x["userId"])
-        max_values = {}
-        for key, group in groupby(docs_sorted, key=lambda x: x["userId"]):
-            max_values[key] = max(group, key=lambda x: x["createdDateTime"])["createdDateTime"]
-        # res = es.search(
-        #     index=index,
-        #     query={
-        #         "term": {
-        #             "userId.keyword": user_id
-        #         }},
-        #     sort=[
-        #         {
-        #             "createdDateTime": {
-        #                 "order": "desc"
-        #             }
-        #         }
-        #     ],
-        #     size=1
-        # )
-        # if(res["hits"]["total"]["value"]>0):
-        #     return res["hits"]["hits"][0]["_source"]["createdDateTime"]
-        # else:
-        #     return "1900-01-01T00:00:00Z"
-        if(user_id in max_values):
-            return max_values[user_id]
+        res = es.search(
+            index=index,
+            query={
+                "term": {
+                    "userId.keyword": user_id
+                }},
+            sort=[
+                {
+                    "createdDateTime": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            size=1
+        )
+        if(res["hits"]["total"]["value"]>0):
+            return res["hits"]["hits"][0]["_source"]["createdDateTime"]
         else:
-            return "1900-01-01T00:00:00Z"   
+            return "1900-01-01T00:00:00Z"
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         print(f"Last User Login: ERROR {e}")
         return "1900-01-01T00:00:00Z"
         # return None

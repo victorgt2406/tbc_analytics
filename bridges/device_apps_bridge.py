@@ -51,6 +51,6 @@ class DeviceAppsBridge(Bridge):
                 print(f"{self.index}: Device ({index}/{len(devices)})")
                 await asyncio.sleep(1)
 
-            await self.elk.bulk_docs(apps, self.index)
+            await self.elk.bulk_docs(apps, self.index) # Hay que cambiar el id de las apps a id_app_id_device
 
 bridge = DeviceAppsBridge()

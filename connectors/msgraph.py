@@ -48,7 +48,8 @@ class Msgraph:
         if token:
             print("MsGraph: token created")
         else:
-            print("WARNING Msgraph: token is None")
+            raise ValueError("ERROR Msgraph: token is None, CHECK .env FILE")
+
         return {'Authorization': f'Bearer {token}'}  # token microsoft
 
     async def query(self, graph_url: str, get_all_data=True) -> tuple[list[dict[str, Any]], bool]:
@@ -68,7 +69,7 @@ class Msgraph:
                             """)
                         success = False
                     else:
-                        print(f"MsGraph: {graph_url} runned successfully")
+                        print(f"MsGraph: {graph_url[:self.config.get("url_slicing", 50)]} runned successfully")
                     all_data.extend(res_json.get('value', []))
                     if get_all_data:
                         graph_url = res_json.get('@odata.nextLink', None)
