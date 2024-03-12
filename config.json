@@ -1,6 +1,6 @@
 {
     "bridges": {
-        "exceptions": ["device_apps_bridge"],
+        "exceptions": ["elk_device_apps_bridge"],
         "fail_sleep": 0.2,
         "ms_users": {
             "sleep": 3600,
