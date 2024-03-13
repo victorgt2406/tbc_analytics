@@ -1,7 +1,7 @@
 {
     "bridges": {
         "exceptions": [
-            "elk_device_apps_bridge",
+            "device_apps_bridge",
             "json_user_bridge",
             "json_interactive-signins_bridge",
             "json_device_apps_bridge",
