@@ -2,7 +2,8 @@
     "bridges": {
         "exceptions": [
             "device_apps_bridge",
-            "device_bridge"
+            "device_bridge",
+            "elk_user_bridge"
         ],
         "fail_sleep": 0.2,
         "ms_users": {
@@ -12,6 +13,9 @@
                 "05e9a617-0261-4cee-bb44-138d3ef5d965": "E3",
                 "e0dfc8b9-9531-4ec8-94b4-9fec23b05fc8": "x-account"
             }
+        },
+        "ms_usersv2": {
+            "sleep": 60
         },
         "logs-ms_signins_noninteractive": {
             "sleep": 120
