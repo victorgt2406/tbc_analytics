@@ -1,9 +1,9 @@
 import asyncio
 from typing import Any
-from bridges import Bridge
+from bridges.templates import MsGraphElkBridge
 
 
-class DeviceAppsBridge(Bridge):
+class DeviceAppsBridge(MsGraphElkBridge):
     "Device apps bridge"
 
     def __init__(self) -> None:
@@ -16,9 +16,9 @@ class DeviceAppsBridge(Bridge):
             "Converts a tuple (str, Any) to a dict"
             return dict((key, value) for key, value in tuple_list)
         
-        if self.mg and self.elk:
+        if self.fetcher and self.saver:
             # Getting all the devices with MsGraph
-            devices = list(await self.mg.fetch_data("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/"))
+            devices = list(await self.fetcher.fetch_data("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/"))
 
             # The device fields to keep
             device_fields = self.config.get("device_fields", ["id", "deviceName", "userId", "userDisplayName", "emailAddress"])
@@ -33,7 +33,7 @@ class DeviceAppsBridge(Bridge):
                 device_id = device["id"]
 
                 # Getting all the apps per device
-                device_apps = await self.mg.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
+                device_apps = await self.fetcher.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
 
                 # TO DO 
                 # in_while = 0
@@ -43,7 +43,7 @@ class DeviceAppsBridge(Bridge):
                 #     print(f"{self.name}: In while ({
                 #         in_while+1}) {device_id} {device["emailAddress"]}")
                 #     await asyncio.sleep(5)
-                #     device_apps = await self.mg.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
+                #     device_apps = await self.fetcher.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
                 #     in_while += 1
                 
                 # For each app, parse the device information
@@ -53,6 +53,6 @@ class DeviceAppsBridge(Bridge):
                 print(f"{self.name}: Device ({index}/{len(devices)})")
                 await asyncio.sleep(1)
 
-            await self.elk.save_data(apps, self.name) # Hay que cambiar el id de las apps a id_app_id_device
+            await self.saver.save_data(apps, self.name) # Hay que cambiar el id de las apps a id_app_id_device
 
 bridge = DeviceAppsBridge()

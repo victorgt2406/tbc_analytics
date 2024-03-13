@@ -1,19 +1,20 @@
 "MSGraph Basic Bridge template"
 
-from typing import List, Type
+from typing import Generic, List, Type, TypeVar
 from bridges import Bridge
 from connectors import Saver
 from connectors.elk import Elk
 from connectors.json_filesystem import JsonFilesystem
 from connectors.msgraph import Msgraph
 
+S = TypeVar('S', bound=Saver)
 
-class MsGraphBasicBridge(Bridge):
+class MsGraphBasicBridge(Bridge[Msgraph, S], Generic[S]):
     """
     MsGraph Basic Bridge
     """
 
-    def __init__(self, urls: List[str], name: str, saver_class: Type[Saver]) -> None:
+    def __init__(self, urls: List[str], name: str, saver_class: Type[S]) -> None:
         super().__init__(name, Msgraph, saver_class)
         self.urls = urls
         self.index = name
@@ -26,7 +27,7 @@ class MsGraphBasicBridge(Bridge):
             )
 
 
-class MsGraphElkBasicBridge(MsGraphBasicBridge):
+class MsGraphElkBasicBridge(MsGraphBasicBridge[Elk]):
     """
     MsGraph Basic Bridge using Elasticsearch
     """
@@ -34,7 +35,7 @@ class MsGraphElkBasicBridge(MsGraphBasicBridge):
         super().__init__(urls, name, Elk)
 
 
-class MsGraphJsonBasicBridge(MsGraphBasicBridge):
+class MsGraphJsonBasicBridge(MsGraphBasicBridge[JsonFilesystem]):
     """
     MsGraph Basic Bridge using Json File System
     """

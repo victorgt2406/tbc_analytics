@@ -3,28 +3,30 @@
 from abc import ABC, abstractmethod
 import time
 import asyncio
-from typing import Type
+from typing import Generic, Type, TypeVar
 from connectors import Fetcher, Saver
-from connectors.elk import Elk
-from connectors.json_filesystem import JsonFilesystem
-from connectors.msgraph import Msgraph
 from utils.config import load_config
 
 
-class Bridge(ABC):
+# Define type variables for fetcher and saver
+F = TypeVar('F', bound=Fetcher)
+S = TypeVar('S', bound=Saver)
+
+
+class Bridge(ABC, Generic[F, S]):
     """
     Abstract class of bridge
     """
 
-    def __init__(self, name: str, fetcher_class: Type[Fetcher], saver_class: Type[Saver]) -> None:
+    def __init__(self, name: str, fetcher_class: Type[F], saver_class: Type[S]) -> None:
 
         self.name = name
         # Fetcher
-        self.fetcher_class: Type[Fetcher] = fetcher_class
-        self.fetcher: Fetcher = self.fetcher_class()
+        self._fetcher_class: Type[F] = fetcher_class
+        self.fetcher: F = self._fetcher_class()
         # Saver
-        self.saver_class: Type[Saver] = saver_class
-        self.saver: Saver = self.saver_class()
+        self._saver_class: Type[S] = saver_class
+        self.saver: S = self._saver_class()
 
         # Config
         config: dict = load_config().get("bridges", {})
@@ -36,8 +38,8 @@ class Bridge(ABC):
 
     def setup(self):
         "Update the credentials to Elasticsearch and Msgraph"
-        self.saver = self.saver_class()
-        self.fetcher = self.fetcher_class()
+        self.saver = self._saver_class()
+        self.fetcher = self._fetcher_class()
 
     def start(self):
         "Start automatic mode"

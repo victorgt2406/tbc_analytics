@@ -4,13 +4,13 @@ User Bridge extends Bridge abstract class
 By Víctor Gutiérrez Tovar
 """
 
-from bridges import Bridge
+from bridges.templates.ms_graph_elk_bridge import MsGraphElkBridge
 from queries.last_user_login_date import last_user_login_date
 from utils.compare_str_dates import compare_str_dates
 from utils.is_x_percent_done import is_x_percent_done
 
 
-class UserBridge(Bridge):
+class UserBridge(MsGraphElkBridge):
     """
     User Bridge: updates the user data
     - basic data
@@ -30,12 +30,12 @@ class UserBridge(Bridge):
 
         # Fecth data from Msgraph and upload it to Elasticsearch
         for url in urls:
-            data = await self.mg.fetch_data(url)
-            await self.elk.save_data(data, self.name)
+            data = await self.fetcher.fetch_data(url)
+            await self.saver.save_data(data, self.name)
 
         mg_licenses = self.config.get("licenses", {})
-        users = (await self.mg.fetch_data("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))
-        es = self.elk.es
+        users = (await self.fetcher.fetch_data("https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses"))
+        es = self.saver.es
 
         lastest_conections_docs = []
         for i, user in enumerate(users):
@@ -65,7 +65,7 @@ class UserBridge(Bridge):
                 "last_signin": last_signin
             }
             lastest_conections_docs.append(doc)
-        await self.elk.save_data(lastest_conections_docs, self.name)
+        await self.saver.save_data(lastest_conections_docs, self.name)
 
 
 bridge = UserBridge()
