@@ -9,7 +9,7 @@ from connectors.msgraph import Msgraph
 
 S = TypeVar('S', bound=Saver)
 
-class MsGraphBasicBridge(Bridge[Msgraph, S], Generic[S]):
+class MsGraphBridgeBasic(Bridge[Msgraph, S], Generic[S]):
     """
     MsGraph Basic Bridge
     """
@@ -27,7 +27,7 @@ class MsGraphBasicBridge(Bridge[Msgraph, S], Generic[S]):
             )
 
 
-class MsGraphElkBasicBridge(MsGraphBasicBridge[Elk]):
+class MsGraphElkBridgeBasic(MsGraphBridgeBasic[Elk]):
     """
     MsGraph Basic Bridge using Elasticsearch
     """
@@ -35,7 +35,7 @@ class MsGraphElkBasicBridge(MsGraphBasicBridge[Elk]):
         super().__init__(urls, name, Elk)
 
 
-class MsGraphJsonBasicBridge(MsGraphBasicBridge[JsonFilesystem]):
+class MsGraphJsonBridgeBasic(MsGraphBridgeBasic[JsonFilesystem]):
     """
     MsGraph Basic Bridge using Json File System
     """
