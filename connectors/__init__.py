@@ -7,10 +7,13 @@ P = TypeVar('P') # Place to store it or upload it
 
 class Connector(ABC):
     "Connector"
-    def __init__(self, name) -> None:
+    def __init__(self, name="unnamed connector") -> None:
         self.name = name
         self.set_up()
-        print(f"Connector: {name} RUNNING...")
+        if name == "unnamed connector":
+            print("WARNING: Unnamed connector")
+        else:
+            print(f"Connector: {name} RUNNING...")
 
     @abstractmethod
     def set_up(self):

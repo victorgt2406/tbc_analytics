@@ -48,5 +48,11 @@
     "elk": {
         "sleep": 0.8,
         "threshold": 1000
+    },
+    "json_filesystem": {
+        "sleep": 0.8,
+        "threshold": 1000,
+        "path": "./archived",
+        "file_extension": "datajson"
     }
 }
