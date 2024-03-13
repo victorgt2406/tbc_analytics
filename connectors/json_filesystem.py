@@ -1,3 +1,4 @@
+import os
 from typing import Any, List, Dict
 import json
 import aiofiles
@@ -34,7 +35,8 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
 
     async def upsert_docs(self, docs: List[Dict[str, Any]], filename: str, id_key="id"):
         "Save the docs in a file to the path selected"
-        filename = f"{self.path}/{filename}.{self.file_extension}"
+        os.makedirs(self.path, exist_ok=True)  # Ensure the directory exists
+        filepath = f"{self.path}/{filename}.{self.file_extension}"
 
         existing_docs = await self.load_docs(filename)
         existing_docs_dict = {doc[id_key]: doc for doc in existing_docs}
@@ -43,10 +45,11 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
             doc_id = doc[id_key]
             existing_docs_dict[doc_id] = doc
         merged_docs = list(existing_docs_dict.values())
-        async with aiofiles.open(filename, 'w') as file:
+        
+        async with aiofiles.open(filepath, 'w') as file:
             for doc in merged_docs:
                 await file.write(json.dumps(doc) + "\n")
-        print(f"JsonFileSystem: {filename} was upgraded")
+        print(f"JsonFileSystem: {filepath} was upgraded")
 
     async def load_docs(self, filename: str, start: int = 0, end: int = -1) -> List[Dict[str, Any]]:
         "Load the docs from a file"
@@ -61,8 +64,8 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
                         docs.append(json.loads(line))
                     current_index += 1
             return docs
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"JsonFileSystem: ERROR. When loading jsons JsonFileSystem {e}")
+        except FileNotFoundError:
+            print(f"JsonFileSystem: File not found - {filepath}. Returning empty list.")
             return []
         
     async def convert_json_to_datajson(self, source_filename: str, name: str):
