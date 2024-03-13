@@ -15,7 +15,7 @@
             }
         },
         "ms_usersv2": {
-            "sleep": 60
+            "sleep": 600
         },
         "logs-ms_signins_noninteractive": {
             "sleep": 120
@@ -24,7 +24,7 @@
             "sleep": 120
         },
         "ms_devices": {
-            "sleep": 3600
+            "sleep": 600
         },
         "ms_device_apps": {
             "sleep": 3600,
@@ -42,6 +42,7 @@
     },
     "ms_graph": {
         "sleep": 0.1,
+        "toomanyrequest_sleep": 25,
         "timeout": 60,
         "url_slicing": 60
     },

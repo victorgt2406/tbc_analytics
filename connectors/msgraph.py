@@ -66,23 +66,41 @@ class Msgraph(Fetcher[Dict[str,Any], str]):
         all_data = []
         success = True
         timeout = aiohttp.ClientTimeout(total=self.config.get("timeout", 30))
+        # Sesion to fetch data to MsGraph
         async with aiohttp.ClientSession(timeout=timeout) as session:
             while graph_url:
                 async with session.get(graph_url, headers=self.headers) as response:
-                    res_json:dict = await response.json()
-                    if ("error" in res_json):
-                        print(
-                            f"""
+
+                    res_json:dict = await response.json() # The response of MsGraph
+
+                    # APPEND NEW DATA
+                    all_data.extend(res_json.get('value', []))
+
+                    too_many_requests = False
+
+                    if "error" in res_json:
+                        print(f"""
                             MsGraph: ERROR {graph_url} failed\n
                             \t{res_json["error"]["code"]} -- {res_json["error"]["message"]}
-                            """)
-                        success = False
+                        """)
+
+                        # TOO MANY REQUESTS -> Sleep n Secs
+                        if res_json["error"]["code"] == "TooManyRequests":
+                            too_many_requests = True
+                            too_many_requests_sleep = self.config.get("toomanyrequest_sleep", 30)
+                            print(f"MsGrpah: TOO MANY REQUEST, sleeping for {too_many_requests_sleep} secs")
+                            await asyncio.sleep(too_many_requests_sleep)
+                        else:
+                            success = False
+
                     else:
                         print(f"MsGraph: {graph_url[:self.config.get("url_slicing", 50)]} runned successfully")
-                    all_data.extend(res_json.get('value', []))
-                    if get_all_data:
-                        graph_url = res_json.get('@odata.nextLink', None)
-                    else:
-                        graph_url = None # type: ignore
+
+                    if not too_many_requests or not get_all_data:
+                        if get_all_data:
+                            graph_url = res_json.get('@odata.nextLink', None)
+                        else:
+                            graph_url = None # type: ignore
+                    
                     await asyncio.sleep(self.sleep)
         return all_data, success
