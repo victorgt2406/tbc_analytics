@@ -2,11 +2,7 @@
     "bridges": {
         "exceptions": [
             "device_apps_bridge",
-            "json_user_bridge",
-            "json_interactive-signins_bridge",
-            "json_device_apps_bridge",
-            "json_device_bridge",
-            "json_noninteractive-signins_bridge"
+            "device_bridge"
         ],
         "fail_sleep": 0.2,
         "ms_users": {

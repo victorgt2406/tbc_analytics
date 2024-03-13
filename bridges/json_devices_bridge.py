@@ -1,0 +1,4 @@
+from bridges.templates.ms_graph_devices_bridge import MsGraphDevicesBridge
+from connectors.json_filesystem import JsonFilesystem
+
+bridge = MsGraphDevicesBridge(JsonFilesystem)
