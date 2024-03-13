@@ -23,9 +23,11 @@ class UserBridge(Bridge):
         super().__init__("ms_users")
 
     async def update_data(self):
-        urls = ["https://graph.microsoft.com/v1.0/users",
-        "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"]
-        
+        urls = [
+            "https://graph.microsoft.com/v1.0/users",
+            "https://graph.microsoft.com/v1.0/users?$select=id,assignedLicenses,userType,userPrincipalName,accountEnabled,department,usageLocation,country"
+        ]
+
         # Fecth data from Msgraph and upload it to Elasticsearch
         for url in urls:
             data = await self.mg.fetch_data(url)
@@ -37,8 +39,9 @@ class UserBridge(Bridge):
 
         lastest_conections_docs = []
         for i, user in enumerate(users):
-            if is_x_percent_done(i,len(users), 10):
-                print(f"INFO: User bridge last_login transform {i+1}/{len(users)}")
+            if is_x_percent_done(i, len(users), 10):
+                print(f"INFO: User bridge last_login transform {
+                      i+1}/{len(users)}")
 
             user_id = user["id"]
 

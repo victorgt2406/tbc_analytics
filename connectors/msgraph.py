@@ -56,9 +56,7 @@ class Msgraph(Fetcher[Dict[str,Any], str]):
 
         token_res = ms.acquire_token_for_client(scopes=scope)
         token: str = token_res.get("access_token")  # type: ignore
-        if token:
-            print("MsGraph: token created")
-        else:
+        if not token:
             raise ValueError("ERROR Msgraph: token is None, CHECK .env FILE")
 
         return {'Authorization': f'Bearer {token}'}  # token microsoft

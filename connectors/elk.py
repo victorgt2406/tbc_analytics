@@ -22,7 +22,7 @@ class Elk(Saver[Dict[str,Any], str]):
     """
 
     def __init__(self) -> None:
-        super().__init__("Elasticsearch connetor")
+        super().__init__("Elasticsearch")
         self.config:dict = load_config().get("elk",{})
         self.sleep = self.config.get("sleep", 0.5)
 
