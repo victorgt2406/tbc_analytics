@@ -1,13 +1,14 @@
 import asyncio
-from typing import Any
-from bridges_json import Bridge
+from typing import Any, Type
+from bridges.templates import MsGraphBridge
+from connectors import Saver
 
 
-class DeviceAppsBridge(Bridge):
+class MsGraphDeviceAppsBridge(MsGraphBridge[Saver]):
     "Device apps bridge"
 
-    def __init__(self) -> None:
-        super().__init__("ms_device_apps")
+    def __init__(self, saver:Type[Saver]) -> None:
+        super().__init__("ms_device_apps", saver)
 
     async def update_data(self):
         "Loads all the data of the installed applications per device using ms_graph"
@@ -16,9 +17,9 @@ class DeviceAppsBridge(Bridge):
             "Converts a tuple (str, Any) to a dict"
             return dict((key, value) for key, value in tuple_list)
         
-        if self.mg and self.jsonfs:
+        if self.fetcher and self.saver:
             # Getting all the devices with MsGraph
-            devices = list((await self.mg.query("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/"))[0])
+            devices = list(await self.fetcher.fetch_data("https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/"))
 
             # The device fields to keep
             device_fields = self.config.get("device_fields", ["id", "deviceName", "userId", "userDisplayName", "emailAddress"])
@@ -33,16 +34,18 @@ class DeviceAppsBridge(Bridge):
                 device_id = device["id"]
 
                 # Getting all the apps per device
-                device_apps, success = await self.mg.query(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
-                in_while = 0
-                if (device_apps == []):
-                    print(f"{self.name}: EMPTY LIST", success)
-                while (not success):
-                    print(f"{self.name}: In while ({
-                        in_while+1}) {device_id} {device["emailAddress"]}")
-                    await asyncio.sleep(5)
-                    device_apps, success = await self.mg.query(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
-                    in_while += 1
+                device_apps = await self.fetcher.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
+
+                # TO DO 
+                # in_while = 0
+                # if (device_apps == []):
+                #     print(f"{self.name}: EMPTY LIST", success)
+                # while (not success):
+                #     print(f"{self.name}: In while ({
+                #         in_while+1}) {device_id} {device["emailAddress"]}")
+                #     await asyncio.sleep(5)
+                #     device_apps = await self.fetcher.fetch_data(f'https://graph.microsoft.com/beta/deviceManagement/managedDevices/{device_id}/detectedApps')
+                #     in_while += 1
                 
                 # For each app, parse the device information
                 for device_app in device_apps:
@@ -51,6 +54,4 @@ class DeviceAppsBridge(Bridge):
                 print(f"{self.name}: Device ({index}/{len(devices)})")
                 await asyncio.sleep(1)
 
-            await self.jsonfs.upsert_docs(apps, self.name)
-
-bridge = DeviceAppsBridge()
+            await self.saver.save_data(apps, self.name) # Hay que cambiar el id de las apps a id_app_id_device

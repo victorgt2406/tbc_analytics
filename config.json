@@ -1,6 +1,9 @@
 {
     "bridges": {
-        "exceptions": ["device_apps_bridge"],
+        "exceptions": [
+            "device_apps_bridge",
+            "device_bridge"
+        ],
         "fail_sleep": 0.2,
         "ms_users": {
             "sleep": 3600,
@@ -41,5 +44,11 @@
     "elk": {
         "sleep": 0.8,
         "threshold": 1000
+    },
+    "json_filesystem": {
+        "sleep": 0.8,
+        "threshold": 1000,
+        "path": "./archived",
+        "file_extension": "datajson"
     }
 }

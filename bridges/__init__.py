@@ -3,29 +3,43 @@
 from abc import ABC, abstractmethod
 import time
 import asyncio
-from connectors.elk import Elk
-from connectors.msgraph import Msgraph
+from typing import Generic, Type, TypeVar
+from connectors import Fetcher, Saver
 from utils.config import load_config
 
 
-class Bridge(ABC):
+# Define type variables for fetcher and saver
+F = TypeVar('F', bound=Fetcher)
+S = TypeVar('S', bound=Saver)
+
+
+class Bridge(ABC, Generic[F, S]):
     """
     Abstract class of bridge
     """
 
-    def __init__(self, index: str) -> None:
-        self._stop = False
-        self.index = index
-        # self.elk: Elk | None = None
-        # self.mg: Msgraph | None = None
-        self.setup()
+    def __init__(self, name: str, fetcher_class: Type[F], saver_class: Type[S]) -> None:
+
+        self.name = name
+        # Fetcher
+        self._fetcher_class: Type[F] = fetcher_class
+        self.fetcher: F = self._fetcher_class()
+        # Saver
+        self._saver_class: Type[S] = saver_class
+        self.saver: S = self._saver_class()
+
+        # Config
         config: dict = load_config().get("bridges", {})
         self.fail_sleep = config.get("fail_sleep", 1)
-        self.config: dict = config.get(index, {})
-        if not self.config:
-            print(f"WARNING: Bridge with index {index} has an empty configuration.")
+        self.config: dict = config.get(name, {})
+        self._stop = False
 
         self.sleep: float = self.config.get("sleep", 3600)
+
+    def setup(self):
+        "Update the credentials to Elasticsearch and Msgraph"
+        self.saver = self._saver_class()
+        self.fetcher = self._fetcher_class()
 
     def start(self):
         "Start automatic mode"
@@ -35,11 +49,6 @@ class Bridge(ABC):
     def stop(self):
         "Stop automatic mode"
         self._stop = True
-
-    def setup(self):
-        "Update the credentials to Elasticsearch and Msgraph"
-        self.elk = Elk()
-        self.mg = Msgraph()
 
     @abstractmethod
     async def update_data(self):
@@ -55,29 +64,13 @@ class Bridge(ABC):
                 end_time = time.time()
 
                 total_time = end_time - start_time
-                print(f"INFO: Bridge {self.index}: took {total_time:.2f} secs")
+                print(f"INFO: Bridge {self.name}: took {total_time:.2f} secs")
                 await asyncio.sleep(self.sleep)
-            except Exception as e: # pylint: disable=broad-exception-caught
-                print(f"ERROR automatic_mode {self.index} -- {e}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"ERROR automatic_mode {self.name} -- {e}")
                 await asyncio.sleep(self.fail_sleep)
 
     async def run_once(self):
         "Runs one update data"
         self.setup()
         await self.update_data()
-
-
-class BasicBridge(Bridge):
-    "Basic Brige"
-
-    def __init__(self, urls: list[str], index: str) -> None:
-        self.urls = urls
-        self.index = index
-        super().__init__(index)
-
-    async def update_data(self):
-        if self.elk and self.mg:
-            for url in self.urls:
-                await self.elk.bulk_docs((await self.mg.query(url))[0], self.index)
-        else:
-            print("BasicBridge: ERROR ELK or MSGRAPH are None")

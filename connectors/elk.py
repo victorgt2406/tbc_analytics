@@ -2,13 +2,14 @@
 
 import asyncio
 import os
-from typing import List
+from typing import Any, List, Dict
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
+from connectors import Saver
 from utils.config import load_config
 
 
-class Elk:
+class Elk(Saver[Dict[str,Any], str]):
     """
     A class that abstract Elasticsearch
 
@@ -21,22 +22,26 @@ class Elk:
     """
 
     def __init__(self) -> None:
-        self.setup_connections()
+        super().__init__("Elasticsearch")
         self.config:dict = load_config().get("elk",{})
         self.sleep = self.config.get("sleep", 0.5)
 
-    def setup_connections(self):
+    async def save_data(self, data: List[Dict[str, Any]], place: str, **args) -> None:
+        """
+        id_key arg extra
+        """
+        await self._bulk_docs(data, place, args.get("id_key", "id"))
+
+    def set_up(self):
         """
         Connects to Elasticsearch cluster and updates the es client
         """
         load_dotenv()
         cloud = os.getenv("ES_CLOUD")
         api_key = os.getenv("ES_API_KEY")
-
         self.es = Elasticsearch(cloud, api_key=api_key)
-        print("Elasticsearch: Connection sucessful")
 
-    def to_esdocs(self, docs: List[dict], index, id_key="id") -> List[dict]:
+    def _to_esdocs(self, docs: List[dict], index, id_key) -> List[dict]:
         """
         This function transforms a list of documents, where each document is represented as a Python dictionary, into a format suitable for bulk operations in Elasticsearch.
 
@@ -60,8 +65,8 @@ class Elk:
                 "doc_as_upsert": True
             })
         return docs_es
-
-    async def bulk_docs(self, docs: List[dict], index, id_key="id"):
+    
+    async def _bulk_docs(self, docs: List[dict], index, id_key):
         """
         This function takes a list of documents and performs a bulk operation to insert them into an Elasticsearch index.
 
@@ -73,7 +78,7 @@ class Elk:
         - `id_key="id"`: The key in each document dictionary that contains the document's ID. The default key is `"id"`.
         """
         if self.es:
-            docs_es = self.to_esdocs(docs, index, id_key)
+            docs_es = self._to_esdocs(docs, index, id_key)
             print(f"Elasticsearch: {
                 len(docs)} docs where transformed to be indexed at {index}")
             threshold = self.config.get("threshold", 500)
