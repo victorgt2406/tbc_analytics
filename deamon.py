@@ -6,14 +6,14 @@ from utils.config import load_config
 # from connectors.elk_msgraph import ElkMsgraph
 
 # em = ElkMsgraph()
-config:dict = load_config()
-c_bridges:dict = config.get("bridges", {})
-c_bridges_exception:list = c_bridges.get("exceptions",["device_apps_bridge"])
+config: dict = load_config()
+c_bridges: dict = config.get("bridges", {})
+# c_bridges_exception:list = c_bridges.get("exceptions",["device_apps_bridge"])
 
 
 def load_bridges() -> list[Bridge]:
     """
-    Loads all the modules of the bridges inside `/bridges` directory
+    Loads all the modules of the bridges inside `/deamon_bridges` directory
 
     ### Exception
     - It ignores the `/bridges/__init__.py` file
@@ -21,12 +21,14 @@ def load_bridges() -> list[Bridge]:
     """
 
     bridges: list[Bridge] = []
-    path = "./bridges"
+    path = "./deamon_bridges"
     files: list[str] = list(map(lambda x: f"{path}/{x}", os.listdir(path)))
-    bridges_exception_path = list(
-        map(lambda x: f"{path}/{x}.py", c_bridges_exception))
+    # bridges_exception_path = list(
+    #     map(lambda x: f"{path}/{x}.py", c_bridges_exception))
+    # files = list(filter(lambda file: file.endswith(".py") and not file.endswith(
+    #     "__init__.py") and not file in bridges_exception_path, files))
     files = list(filter(lambda file: file.endswith(".py") and not file.endswith(
-        "__init__.py") and not file in bridges_exception_path, files))
+        "__init__.py"), files))
     print(files)
     for file in files:
         route_name = file.split("/")[-1][:-3]
