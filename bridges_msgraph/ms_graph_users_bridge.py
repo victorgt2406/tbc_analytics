@@ -1,8 +1,5 @@
 from datetime import datetime
-from bridges.templates import MsGraphBridge
-
-# URLS = ["https://graph.microsoft.com/v1.0/users?$select=id,displayName,assignedLicenses,signInActivity,email,userPrincipalName"]
-# NAME = "ms_usersv2"
+from bridges_msgraph.ms_graph_bridge import MsGraphBridge
 
 
 class MsGraphUsersBridge(MsGraphBridge):

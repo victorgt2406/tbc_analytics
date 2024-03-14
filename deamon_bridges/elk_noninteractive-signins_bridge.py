@@ -5,7 +5,7 @@ Non Interactive Signings Bridge
 By Víctor Gutiérrez Tovar
 """
 from datetime import datetime, timezone
-from bridges.templates import MsGraphElkBridge
+from bridges_msgraph import MsGraphElkBridge
 from queries.last_login_date import last_login_date
 
 

@@ -1,7 +1,5 @@
-
-
 from datetime import datetime, timezone
-from bridges.templates.ms_graph_elk_bridge import MsGraphElkBridge
+from bridges_msgraph import MsGraphElkBridge
 from queries.last_login_date import last_login_date
 
 

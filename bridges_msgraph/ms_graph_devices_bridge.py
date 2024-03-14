@@ -1,4 +1,5 @@
-from bridges.templates import MsGraphBridgeBasic
+from bridges_msgraph.ms_graph_basic_bridge import MsGraphBridgeBasic
+
 
 URLS = ["https://graph.microsoft.com/v1.0/deviceManagement/managedDevices"]
 INDEX = "ms_devices"

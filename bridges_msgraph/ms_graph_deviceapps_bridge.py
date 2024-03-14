@@ -1,6 +1,6 @@
 import asyncio
 from typing import Type
-from bridges.templates import MsGraphBridge
+from bridges_msgraph.ms_graph_bridge import MsGraphBridge
 from connectors import Saver
 from utils.is_x_percent_done import is_x_percent_done
 

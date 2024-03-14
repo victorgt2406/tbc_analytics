@@ -4,7 +4,7 @@ User Bridge extends Bridge abstract class
 By Víctor Gutiérrez Tovar
 """
 
-from bridges.templates.ms_graph_elk_bridge import MsGraphElkBridge
+from bridges_msgraph import MsGraphElkBridge
 from queries.last_user_login_date import last_user_login_date
 from utils.compare_str_dates import compare_str_dates
 from utils.is_x_percent_done import is_x_percent_done

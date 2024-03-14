@@ -66,6 +66,7 @@ class Msgraph(Fetcher[Dict[str,Any], str]):
         all_data = []
         success = True
         timeout = aiohttp.ClientTimeout(total=self.config.get("timeout", 30))
+
         # Sesion to fetch data to MsGraph
         async with aiohttp.ClientSession(timeout=timeout) as session:
             while graph_url:
@@ -88,7 +89,7 @@ class Msgraph(Fetcher[Dict[str,Any], str]):
                         if res_json["error"]["code"] == "TooManyRequests":
                             too_many_requests = True
                             too_many_requests_sleep = self.config.get("toomanyrequest_sleep", 30)
-                            print(f"MsGrpah: TOO MANY REQUEST, sleeping for {too_many_requests_sleep} secs")
+                            print(f"MsGraph: TOO MANY REQUEST, sleeping for {too_many_requests_sleep} secs")
                             await asyncio.sleep(too_many_requests_sleep)
                         else:
                             success = False
