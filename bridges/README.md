@@ -1,58 +1,83 @@
-# Bridge System Overview
+# Bridge
 
-The Bridge system is designed to facilitate data synchronization between different sources and destinations, specifically focusing on integrating Microsoft Graph API data with Elasticsearch. This system abstracts the fundamental operations required for fetching data from Microsoft Graph (via the `Msgraph` connector) and indexing it into Elasticsearch (via the `Elk` connector), providing a robust framework for extending functionality to various data types and sources.
+The Bridge component is a fundamental part of an asynchronous data processing system, designed to orchestrate the flow of data between various sources and destinations. It serves as a template for creating specific bridges that can fetch data using a Fetcher component, process or directly transfer it, and then save it using a Saver component. This document aims to provide a comprehensive guide to understanding, implementing, and utilizing the Bridge component effectively.
 
-# Core Components
+## Overview
 
-## Abstract Bridge Class
+A Bridge is an abstract class that outlines the necessary structure for data fetching and saving operations. It uses Generics to accommodate any type of Fetcher and Saver, making it highly versatile and applicable to a wide range of data sources and destinations. The Bridge's main responsibilities include initializing the Fetcher and Saver, managing their operations, and handling errors gracefully.
 
-- **File Location**: `bridges/__init__.py`
+# Features
 
-- **Purpose**: Serves as the base class for all bridge implementations. It defines a standard structure and workflow for data synchronization tasks, ensuring consistency and reusability across different bridge types.
+- **Generic Data Handling:** Supports any data source and destination by leveraging Fetcher and Saver components.
+- **Asynchronous Operation:** Utilizes Python's asyncio for efficient non-blocking data processing.
+- **Automatic and Manual Modes:** Capable of running continuous data processing cycles or a single cycle on demand.
+- **Error Management:** Includes mechanisms for handling operational errors and implementing retry logic.
 
-- **Key Features**:
-    - **Automatic and Manual Modes**: Bridges can operate in an automatic mode where data updates run indefinitely at specified intervals, or manually to execute a single update cycle.
-    - **Extensibility**: The abstract method `update_data` allows subclasses to implement specific data fetching and processing logic.
-    - **Configuration Loading**: Automatically loads and applies configuration settings specific to each bridge instance based on the `index` parameter, which corresponds to a section in the configuration file.
-    - **Connectivity Setup**: Initializes connections to Elasticsearch and Microsoft Graph API, ensuring that data can be fetched and indexed effectively.
+# Create a new bridge with new connectors
 
-## BasicBridge Class
+## Defining Fetcher and Saver Components
 
-- **Purpose**: A extension of the `Bridge` abstract class that focuses on fetching data from predefined URLs (Microsoft Graph API endpoints) and indexing the responses into Elasticsearch.
+Implement Fetcher and Saver classes that inherit from their respective abstract bases. These components should define how data is fetched from a source and saved to a destination. For example:
 
-- **Functionality**: Iterates over a list of URLs, queries data from Microsoft Graph API, and indexes the results into Elasticsearch. This class is tailored for straightforward scenarios where data fetching involves direct API requests without the need for extensive preprocessing.
+```python
+class MyFetcher(Fetcher):
+    def set_up(self):
+        # TODO
+        pass
+    async def fetch_data(self):
+        # TODO
+        pass
 
-# Usage Example
+class MySaver(Saver):
+    def set_up(self):
+        # TODO
+        pass
+    async def save_data(self, data):
+        # TODO
+        pass
+```
 
-- **Bridge Instance**: `device_bridge.py` demonstrates how to instantiate and use a `BasicBridge` to synchronize data from Microsoft Graph API's managed devices endpoint into Elasticsearch.
+## Creating a Bridge Class
 
-- **Configuration**: The bridge system relies on a configuration file (`config.json`) that specifies operational parameters such as API endpoints, index names, and synchronization intervals.
+The Bridge component can be customized by overriding the `update_data` method in subclasses. This method defines the specific logic for how data should be processed between fetching and saving.
 
-## Getting Started
+```python
+class MyCustomBridge(Bridge[MyFetcher,MySaver]):
+    def __init__(self, name: str) -> None:
+        super().__init__(name, MyFetcher, MySaver)
 
-1. **Define URLs and Index**: Specify the Microsoft Graph API endpoints you wish to query and the Elasticsearch index where the data should be stored.
+    async def update_data(self):
+        # Custom data processing logic
+        pass
+```
 
-    ```python
-    URLS = ["https://graph.microsoft.com/v1.0/deviceManagement/managedDevices"]
-    INDEX = "ms_devices"
-    ```
+## Usage
 
-2. **Instantiate Bridge**: Create an instance of `BasicBridge` or another bridge subclass that matches your data synchronization needs.
+### Running a Single Cycle
 
-    ```python
-    bridge = BasicBridge(URLS, INDEX)
-    ```
+To execute a single fetch and save cycle:
 
-3. **Run Synchronization**: Choose between running the bridge in automatic mode for continuous updates or manually triggering a single update cycle.
+```python
+await my_bridge.run_once()
+```
 
-    ```python
-    # For automatic updates
-    bridge.start()
+### Running automatically
 
-    # For a single update cycle
-    asyncio.run(bridge.run_once())
-    ```
+To execute a single fetch and save cycle:
 
-# Extending the Bridge System
+```python
+await my_bridge.automatic_mode()
+```
 
-To support new data sources or synchronization tasks, create a new subclass of `Bridge` and implement the `update_data` method with the desired logic. This design makes it easy to expand the system's capabilities while leveraging the existing framework for configuration management, connectivity setup, and operational modes.
+### Add it to the /deamon_bridges
+```python
+# deamon_bridges/my_custom_bridge.py
+from where_ever_is_the_bridge import MyCustomBridge
+
+bridge = MyCustomBridge("unnamed")
+```
+
+
+# Error Handling
+
+Implement error handling within the `update_data` method or use the provided error handling mechanism to manage retries and failover strategies.

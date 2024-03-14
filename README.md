@@ -2,7 +2,17 @@
 
 Project TBC Analytics is a system designed to fetch, transform, and store data using various connectors with a focus on MsGraph and Elasticsearch (ELK).
 
-## Components
+# Setup
+
+To run this project, you will need to:
+
+1. Clone the repository.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Configure [`.env`](#env). with the necessary credentials for Elasticsearch and MsGraph. 
+4. Update [`config.json`](#configjson) with specific parameters for each bridge.
+5. Start the daemon: `python daemon.py`.
+
+# Components
 
 The project is structured into several components:
 
@@ -103,7 +113,7 @@ The behavior of bridges and connectors is configured via `config.json`. The file
 
 Test and investigations with the connectors.
 
-## .env
+# .env
 
 ```bash
 # Elasticsearch
@@ -115,11 +125,62 @@ MS_CLIENT_SECRET="ms_secret_id"
 MS_TENANT_ID="ms_tenant_id"
 ```
 
-## Contribution
+# config.json
+```json
+{
+    "bridges": {
+        "fail_sleep": 0.2,
+        "ms_users": {
+            "sleep": 3600,
+            "licenses": {
+                "26124093-3d78-432b-b5dc-48bf992543d5": "threat_protection",
+                "05e9a617-0261-4cee-bb44-138d3ef5d965": "E3",
+                "e0dfc8b9-9531-4ec8-94b4-9fec23b05fc8": "x-account"
+            }
+        },
+        ...
+        "ms_device_apps": {
+            "sleep": 3600,
+            "device_fields": [
+                "id",
+                "deviceName",
+                "userId",
+                "userDisplayName",
+                "emailAddress",
+                "operatingSystem",
+                "osVersion",
+                "lastSyncDateTime"
+            ]
+        }
+    },
+    "ms_graph": {
+        "sleep": 0.1,
+        "toomanyrequest_sleep": 25,
+        "timeout": 60,
+        "url_slicing": 60
+    },
+    "elk": {
+        "sleep": 0.8,
+        "threshold": 1000
+    },
+    "json_filesystem": {
+        "sleep": 0.8,
+        "threshold": 1000,
+        "path": "./archived"
+    }
+}
+
+```
+
+# Create a new bridge:
+
+Follow instructions in [bridges/README.md](./bridges/README.md/#create-a-new-bridge-with-new-connectors)
+
+# Contribution
 
 Feel free to contribute to the project by submitting pull requests or issues. Please adhere to the project's code of conduct and contribution guidelines.
 
-## License
+# License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE.txt) file for details.
 
