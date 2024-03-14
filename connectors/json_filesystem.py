@@ -15,16 +15,7 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
     def __init__(self) -> None:
         self.set_up()
         super().__init__("JsonFileSystem")
-    # async def upsert_docs(self, docs: List[Dict[str, Any]], name: str, id_key="id"):
-    #     filepath = f"{self.directory}/{name}.{self.file_extension}"
-    #     len_docs = len(docs)
-    #     async with aiofiles.open(filepath, 'a') as file:
-    #         for i, doc in enumerate(docs):
-    #             await file.write(json.dumps(doc) + "\n")
-    #             if i % 100 == 0:
-    #                 await asyncio.sleep(1)
-    #                 print(f"JsonFileSystem: {i/100}/{len_docs/100} 100 docs where stored")
-    #     print(f"JsonFileSystem: {len_docs} where successfully stored")
+
     def set_up(self):
         self.conf:dict[str, Any] = load_config().get("json_filesystem", {})
         self.path = self.conf.get("path", "./archived")
@@ -43,7 +34,8 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
 
         for doc in docs:
             doc_id = doc[id_key]
-            existing_docs_dict[doc_id] = doc
+            # existing_docs_dict[doc_id] = doc
+            existing_docs_dict[doc_id] = {**existing_docs_dict[doc_id],**doc}
         merged_docs = list(existing_docs_dict.values())
         
         async with aiofiles.open(filepath, 'w') as file:
