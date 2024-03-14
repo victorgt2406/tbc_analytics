@@ -19,69 +19,43 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
     def set_up(self):
         self.conf:dict[str, Any] = load_config().get("json_filesystem", {})
         self.path = self.conf.get("path", "./archived")
-        self.file_extension = self.conf.get("file_extension", "datajson")
     
     async def save_data(self, data: List[Dict[str, Any]], place: str, **args) -> None:
         await self.upsert_docs(data, place, id_key=args.get("id_key", "id"))
 
     async def upsert_docs(self, docs: List[Dict[str, Any]], filename: str, id_key="id"):
-        "Save the docs in a file to the path selected"
+        "Save the json docs in a file to the path selected"
         os.makedirs(self.path, exist_ok=True)  # Ensure the directory exists
-        filepath = f"{self.path}/{filename}.{self.file_extension}"
+        filepath = f"{self.path}/{filename}.json"
 
         existing_docs = await self.load_docs(filename)
         existing_docs_dict = {doc[id_key]: doc for doc in existing_docs}
 
         for doc in docs:
             doc_id = doc[id_key]
-            # existing_docs_dict[doc_id] = doc
             existing_docs_dict[doc_id] = {**existing_docs_dict.get(doc_id,{}),**doc}
-        merged_docs = list(existing_docs_dict.values())
         
+        merged_docs = list(existing_docs_dict.values())
+
         async with aiofiles.open(filepath, 'w') as file:
-            for doc in merged_docs:
-                await file.write(json.dumps(doc) + "\n")
+            await file.write(json.dumps(merged_docs))
+            
         print(f"JsonFileSystem: {filepath} was upgraded")
 
     async def load_docs(self, filename: str, start: int = 0, end: int = -1) -> List[Dict[str, Any]]:
-        "Load the docs from a file"
-        filepath = f"{self.path}/{filename}.{self.file_extension}"
+        "Load the json docs from a file"
+        filepath = f"{self.path}/{filename}.json"
         docs: List[Dict[str, Any]] = []
-        current_index = 0
-        end_index_adjusted = end - 1
         try:
             async with aiofiles.open(filepath, 'r') as file:
-                async for line in file:
-                    if current_index >= start and (end == -1 or current_index <= end_index_adjusted):
-                        docs.append(json.loads(line))
-                    current_index += 1
-            return docs
+                content = await file.read()
+                docs = json.loads(content)
+            # Slice the documents if start and end are specified
+            if end != -1:
+                return docs[start:end]
+            else:
+                return docs[start:]
+
         except FileNotFoundError:
             print(f"JsonFileSystem: File not found - {filepath}. Returning empty list.")
             return []
-        
-    async def convert_json_to_datajson(self, source_filename: str, name: str):
-        """
-        Converts a standard JSON file to a 'datajson' file format used by this class.
-
-        - source_filename: Path to the source JSON file.
-        - name: Name for the target 'datajson' file, without extension.
-        """
-        source_filepath = source_filename
-        target_filepath = f"{self.path}/{name}.{self.file_extension}"
-
-        # Read the entire JSON object/array from the source file
-        async with aiofiles.open(source_filepath, 'r') as file:
-            content = await file.read()
-            data = json.loads(content)
-
-        # Ensure the data is a list for consistency
-        if not isinstance(data, list):
-            data = [data]
-
-        # Write each item in the list to the target file, one item per line
-        async with aiofiles.open(target_filepath, 'w') as file:
-            for item in data:
-                await file.write(json.dumps(item) + "\n")
-
-        print(f"Conversion complete: '{source_filepath}' to '{target_filepath}'") 
