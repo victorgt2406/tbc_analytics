@@ -35,7 +35,7 @@ class JsonFilesystem(Saver[Dict[str,Any], str]):
         for doc in docs:
             doc_id = doc[id_key]
             # existing_docs_dict[doc_id] = doc
-            existing_docs_dict[doc_id] = {**existing_docs_dict[doc_id],**doc}
+            existing_docs_dict[doc_id] = {**existing_docs_dict.get(doc_id,{}),**doc}
         merged_docs = list(existing_docs_dict.values())
         
         async with aiofiles.open(filepath, 'w') as file:
