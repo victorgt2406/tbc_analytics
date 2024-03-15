@@ -73,4 +73,9 @@ class Bridge(ABC, Generic[F, S]):
     async def run_once(self):
         "Runs one update data"
         self.setup()
+        start_time = time.time()
         await self.update_data()
+        end_time = time.time()
+
+        total_time = end_time - start_time
+        print(f"INFO: Bridge {self.name}: took {total_time:.2f} secs")

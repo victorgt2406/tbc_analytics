@@ -40,9 +40,9 @@ class MsGraphDeviceAppsBridge(MsGraphBridge[Saver]):
                 device_app["deviceDetails"] = device
                 apps.append(device_app)
 
-            if is_x_percent_done(i, len(devices), 10):
+            if is_x_percent_done(i, len(devices), 1):
                 print(f"""INFO: Apps bridge {
-                      self.name}: Device ({i+1}/{len(devices)})""")
+                      self.name}: Device {(i+1/len(devices))*100}% - ({i+1}/{len(devices)})""")
             await asyncio.sleep(1)
 
         # Hay que cambiar el id de las apps a id_app_id_device
